@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Ask the CS department a question</h2>
+    <form action="{{ url_for('query') }}" method=post>
+	    <textarea rows=5 cols=50 name=message></textarea></p>
+	    <p><input type=submit value=Query></p>
+    </form>
+    {% if question and answer %}
+    <h2>Question:</h2>
+    {{ question }}
+    <h2>Answer:</h2>
+    {{ answer }}
+    {% endif %}
+    <h2>Example questions:</h2>
+    <ul>
+       <li>What are the requirements for the cybersecurity graduate certificate?
+       <li>Are international students eligible for grad prep?
+       <li>If my undergraduate GPA is below 3.0, will it be possible to be admitted to the MS program?
+       <li>What are the requirements for admission to the Computer Science major?
+       <li>What are the requirements for the Computer Science master's (MS) degree?
+       <li>What are the tracks in the Computer Science master's (MS) degree?
+       <li>What are the track requirements for the Languages and Programming masters track?
+       <li>What are the track requirements for the Databases masters track?
+       <li>What are the track requirements for the Security masters track?
+       <li>What are the track requirements for the Software Engineering masters track?
+       <li>What are the track requirements for the Systems and Networking masters track?
+       <li>What are the track requirements for the Artificial Intelligence and Machine Learning masters track?
+       <li>What cumulative graduate grade point average (GPA) is required to graduate with a masters degree?
+       <li>What degree program grade point average (GPA) is required to graduate with a masters degree?
+       <li>What is the deadline for applying for graduation?
+    </ul>
+{% endblock %}
