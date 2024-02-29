@@ -7,3 +7,6 @@ pytesseract
 PyPDF2
 textract
 tenacity
+langchain-core
+langchain-google-vertexai
+python-dotenv
