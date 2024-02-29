@@ -3,7 +3,6 @@ A simple retrieval-augmented generation LLM app.
 """
 import flask
 import os
-from llm import myllm
 from query import Query
 
 app = flask.Flask(__name__)       # our Flask app
