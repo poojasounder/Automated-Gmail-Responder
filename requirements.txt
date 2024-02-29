@@ -1,0 +1,9 @@
+flask
+gunicorn
+google-cloud-aiplatform
+numpy
+pandas
+pytesseract
+PyPDF2
+textract
+tenacity
