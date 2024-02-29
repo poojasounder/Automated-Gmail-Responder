@@ -6,7 +6,7 @@ import os
 from query import Query
 
 app = flask.Flask(__name__)       # our Flask app
-
+# Hi its me ana!
 app.secret_key = os.urandom(24)
 
 app.add_url_rule('/',
