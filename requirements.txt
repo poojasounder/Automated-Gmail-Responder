@@ -4,6 +4,8 @@ google-cloud-aiplatform
 numpy
 pandas
 pytesseract
-PyPDF2
+pypdf
 textract
 tenacity
+langchain-community
+tqdm
