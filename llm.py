@@ -15,13 +15,7 @@ aiplatform.init(project=os.environ['PROJECT_ID'], location=os.environ['LOCATION'
 # model = TextEmbeddingModel(model_name="gemini-pro")
 model = TextGenerationModel.from_pretrained("text-bison@001")
 
-#model = VertexAI(model_name="text-bison@001")
+model = VertexAI(model_name="text-bison")
 
-
-#message = "What are some of the pros and cons of Python as a programming language?"
-#model.invoke(message)
-
-# skipped response
-
-#for chunk in model.stream(message):
-    #print(chunk, end="", flush=True)
+message = "What are some of the pros and cons of Python as a programming language?"
+model.invoke(message)
