@@ -14,13 +14,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "cs470-rag-llm.json"
 # model = TextEmbeddingModel(model_name="gemini-pro")
 # model = TextGenerationModel(model_name="gemini-pro")
 
-model = VertexAI(model_name="text-bison@001")
-
+model = VertexAI(model_name="text-bison")
 
 message = "What are some of the pros and cons of Python as a programming language?"
 model.invoke(message)
-
-# skipped response
-
-for chunk in model.stream(message):
-    print(chunk, end="", flush=True)
