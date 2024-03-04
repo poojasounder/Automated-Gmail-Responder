@@ -1,7 +1,7 @@
 FROM python:3
 
 # Set environment variables
-ENV OPENAI_API_KEY=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
+ENV OPENAI_API_KEY=OPENAI_API_KEY
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
 
