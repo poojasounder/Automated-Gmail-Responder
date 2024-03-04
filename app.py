@@ -2,15 +2,16 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.embeddings.huggingface import HuggingFaceInstructEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from htmlTemplates import css,user_template,bot_template
+import os
 # Functions
 # get pdf text
+
 
 
 def get_pdf_text(pdf_docs):
@@ -33,6 +34,7 @@ def get_text_chunks(raw_text):
 
 def get_vectorstore(text_chunks):
     embeddings = OpenAIEmbeddings()
+    #embeddings = OpenAIEmbeddings()
     #embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
@@ -51,25 +53,29 @@ def handle_userinput(user_question):
     response = st.session_state.conversation(
         {'question': user_question}
     )
-    st.write(response)
+    st.session_state.chat_history = response['chat_history']
+    for i,message in enumerate(st.session_state.chat_history):
+        if i % 2 == 0:
+            st.write(user_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
+        else:
+            st.write(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
+
 # Main function
 def main():
     
     load_dotenv()
-    
     # Just graphical user interface
     st.set_page_config(page_title="pdx-cs-ask", page_icon=":books")
     st.write(css,unsafe_allow_html=True)
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
-    
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = None
     st.header("Welcome to pdx-cs-ask!")
     user_question = st.text_input("Ask a question about the CS department")
     if user_question:
         handle_userinput(user_question)
     
-    st.write(user_template.replace("{{MSG}}", "hello robot"), unsafe_allow_html=True)
-    st.write(bot_template.replace("{{MSG}}", "hello human"), unsafe_allow_html=True)
     
     with st.sidebar:
         st.subheader("Your documents")

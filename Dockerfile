@@ -1,20 +1,23 @@
-# Use a slim Python base layer
-FROM python:3.9-slim
+FROM python:3
 
-# Specify your e-mail address as the maintainer of the container image
-LABEL maintainer="wuchang@pdx.edu"
+# Set environment variables
+ENV OPENAI_API_KEY=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
+# Allow statements and log messages to immediately appear in the Knative logs
+ENV PYTHONUNBUFFERED True
 
-# Copy the contents of the current directory into the container directory /app
-COPY . /app
+EXPOSE 8080
 
-# Set the working directory of the container to /app
-WORKDIR /app
+# Copy local code to the container image.
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+COPY . ./
 
-# Create a virtual environment
-RUN python3 -m venv env
+# Install production dependencies.
+RUN pip install -r requirements.txt
 
-# Install the Python packages specified by requirements.txt into the container
-RUN env/bin/pip install -r requirements.txt
-
-# Set the parameters to the program
-CMD env/bin/gunicorn --bind :$PORT --workers 1 --threads 8 app:app
+# Run the web service on container startup. Here we use the gunicorn
+# webserver, with one worker process and 8 threads.
+# For environments with multiple CPU cores, increase the number of workers
+# to be equal to the cores available.
+# Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
+CMD streamlit run --server.port 8080 --server.enableCORS false app.py
