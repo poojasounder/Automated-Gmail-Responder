@@ -7,3 +7,4 @@ openai
 huggingface_hub
 langchain_community
 langchain_openai
+six==1.16.0

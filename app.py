@@ -1,6 +1,7 @@
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
+from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings.huggingface import HuggingFaceInstructEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -9,8 +10,10 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from htmlTemplates import css,user_template,bot_template
 import os
+import glob
 # Functions
 # get pdf text
+
 
 
 
@@ -33,9 +36,9 @@ def get_text_chunks(raw_text):
     return chunks
 
 def get_vectorstore(text_chunks):
+    #model = TextEmbeddingModel.from_pretrained("textembedding-gecko")
     embeddings = OpenAIEmbeddings()
-    #embeddings = OpenAIEmbeddings()
-    #embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
+    #embeddings = model.get_embeddings(text_chunks)
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
@@ -72,27 +75,34 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
     st.header("Welcome to pdx-cs-ask!")
+    
+    
+    
+    #with st.sidebar:
+        #st.subheader("Your documents")
+        #pdf_docs = st.file_uploader("Upload your PDFs here and click on Process", accept_multiple_files=True)
+        #if st.button("Process"):
+            #with st.spinner("Processing"):
+                # get pdf text
+    
+    #loader = DirectoryLoader("./documents")
+    #pdf_docs = loader.load()
+    pdf_docs = glob.glob("./documents/**/*.pdf", recursive=True)
+    
+    raw_text = get_pdf_text(pdf_docs)
+                
+                # get the text chunks
+    text_chunks = get_text_chunks(raw_text)
+                
+                # create vector store with embeddings
+    vectorstore = get_vectorstore(text_chunks)
+                
+                # create conversation chain
+    st.session_state.conversation = get_conversation_chain(vectorstore)
+    
     user_question = st.text_input("Ask a question about the CS department")
     if user_question:
         handle_userinput(user_question)
-    
-    
-    with st.sidebar:
-        st.subheader("Your documents")
-        pdf_docs = st.file_uploader("Upload your PDFs here and click on Process", accept_multiple_files=True)
-        if st.button("Process"):
-            with st.spinner("Processing"):
-                # get pdf text
-                raw_text = get_pdf_text(pdf_docs)
-                
-                # get the text chunks
-                text_chunks = get_text_chunks(raw_text)
-                
-                # create vector store with embeddings
-                vectorstore = get_vectorstore(text_chunks)
-                
-                # create conversation chain
-                st.session_state.conversation = get_conversation_chain(vectorstore)
             
     
 

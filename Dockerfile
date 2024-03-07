@@ -1,7 +1,6 @@
 FROM python:3
 
-# Set environment variables
-ENV OPENAI_API_KEY=OPENAI_API_KEY
+
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
 
@@ -11,6 +10,10 @@ EXPOSE 8080
 ENV APP_HOME /app
 WORKDIR $APP_HOME
 COPY . ./
+
+# Set environment variables
+ARG OPENAI_API_KEY
+ENV OPENAI_API_KEY=${OPENAI_API_KEY}
 
 # Install production dependencies.
 RUN pip install -r requirements.txt
