@@ -8,7 +8,7 @@ from query import Query
 app = flask.Flask(__name__)       # our Flask app
 
 app.secret_key = os.urandom(24)
-
+# this is ana, delete later
 app.add_url_rule('/',
                  view_func=Query.as_view('query'),
                  methods=["GET", 'POST'])
