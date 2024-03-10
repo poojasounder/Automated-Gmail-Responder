@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # pdx-cs-ask
 Source code for the "Ask the CS department a question" site at https://askcs.oregonctf.org
 
@@ -10,3 +11,7 @@ Note that the service account used in the Cloud Run deployment must have the Ver
 
 ## Have a GCP project?
 [![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run)
+=======
+# Automated-Gmail-Responder
+# Hi I am here!
+>>>>>>> ac4e17cacc4ef26e7f0757a019858d9797dc173b

@@ -96,7 +96,8 @@ def main():
                 
                 # create vector store with embeddings
     vectorstore = get_vectorstore(text_chunks)
-                
+
+    print(vectorstore)
                 # create conversation chain
     st.session_state.conversation = get_conversation_chain(vectorstore)
     

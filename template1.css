@@ -1,0 +1,77 @@
+body {
+  font-family: "Open Sans", "Helvetica Neue", sans-serif;
+  font-size: 1.2em;
+  color: var(--black);
+}
+
+h1 {
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+.card {
+  width: 500px;
+  margin: 10px;
+  border: 1px solid lightgray;
+  border-radius: 12px;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+.container {
+  padding: 20px;
+  background-color: whitesmoke;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  /*border-radius: 14px;*/
+}
+
+.question,
+.answer {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+button#response {
+  padding: 8px 20px;
+  margin-left: 18px;
+  border: none;
+  width: 165px;
+  background-color: lightseagreen;
+  color: white;
+  border-radius: 8px;
+}
+
+button#response:hover {
+  background-color: seagreen;
+}
+
+button#edit {
+  padding: 8px 20px;
+  margin-left: 18px;
+  border: none;
+  width: 70px;
+  background-color: lightcoral;
+  color: white;
+  border-radius: 8px;
+}
+
+button#edit:hover {
+  background-color: coral;
+}
+
+button#reply {
+  padding: 8px 20px;
+  margin-left: 6px;
+  border: none;
+  width: 70px;
+  background-color: lightskyblue;
+  color: white;
+  border-radius: 8px;
+}
+
+button#reply:hover {
+  background-color: lightblue;
+}
