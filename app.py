@@ -1,111 +1,109 @@
-import streamlit as st
-from dotenv import load_dotenv
-from PyPDF2 import PdfReader
-from langchain_community.document_loaders import DirectoryLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings.huggingface import HuggingFaceInstructEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from htmlTemplates import css,user_template,bot_template
-import os
-import glob
-# Functions
-# get pdf text
+""" import json
+import textwrap
+# Utils
+import time
+import vertexai
+import uuid
+import numpy as np
+from typing import List
+from langchain_google_vertexai import VertexAI, VertexAIEmbeddings
+from langchain.chains import RetrievalQA
+from langchain_community.document_loaders import GCSDirectoryLoader
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+from langchain_community.vectorstores import matching_engine
+from google.cloud import aiplatform
 
 
 
+vertexai.init(project="cs470-rag-llm",location="us-central1")
 
-def get_pdf_text(pdf_docs):
-    text = "" # initialize a variable called text where the raw text is being stored
-    for pdf in pdf_docs:
-        pdf_reader = PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
-    return text
+# utility functions that we will use for the Vertex AI Embeddings API
 
-def get_text_chunks(raw_text):
-    text_splitter = CharacterTextSplitter(
-        separator="\n",
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function = len
-    )
-    chunks = text_splitter.split_text(raw_text)
-    return chunks
+def rate_limit(max_per_minute):
+    period = 60 / max_per_minute
+    print("Waiting")
+    while True:
+        before = time.time()
+        yield
+        after = time.time()
+        elapsed = after - before
+        sleep_time = max(0, period - elapsed)
+        if sleep_time > 0:
+            print(".", end="")
+            time.sleep(sleep_time)
 
-def get_vectorstore(text_chunks):
-    #model = TextEmbeddingModel.from_pretrained("textembedding-gecko")
-    embeddings = OpenAIEmbeddings()
-    #embeddings = model.get_embeddings(text_chunks)
-    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
-    return vectorstore
-
-def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI()
-    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    conversation_chain = ConversationalRetrievalChain.from_llm(
-        llm=llm,
-        retriever=vectorstore.as_retriever(),
-        memory=memory
-    )
-    return conversation_chain
-
-def handle_userinput(user_question):
-    response = st.session_state.conversation(
-        {'question': user_question}
-    )
-    st.session_state.chat_history = response['chat_history']
-    for i,message in enumerate(st.session_state.chat_history):
-        if i % 2 == 0:
-            st.write(user_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
-        else:
-            st.write(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
-
-# Main function
-def main():
+class CustomVertexAIEmbeddings(VertexAIEmbeddings):
+    requests_per_minute: int
+    num_instances_per_batch: int
     
-    load_dotenv()
-    # Just graphical user interface
-    st.set_page_config(page_title="pdx-cs-ask", page_icon=":books")
-    st.write(css,unsafe_allow_html=True)
-    if "conversation" not in st.session_state:
-        st.session_state.conversation = None
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = None
-    st.header("Welcome to pdx-cs-ask!")
-    
-    
-    
-    #with st.sidebar:
-        #st.subheader("Your documents")
-        #pdf_docs = st.file_uploader("Upload your PDFs here and click on Process", accept_multiple_files=True)
-        #if st.button("Process"):
-            #with st.spinner("Processing"):
-                # get pdf text
-    
-    #loader = DirectoryLoader("./documents")
-    #pdf_docs = loader.load()
-    pdf_docs = glob.glob("./documents/**/*.pdf", recursive=True)
-    
-    raw_text = get_pdf_text(pdf_docs)
-                
-                # get the text chunks
-    text_chunks = get_text_chunks(raw_text)
-                
-                # create vector store with embeddings
-    vectorstore = get_vectorstore(text_chunks)
+    # Overriding embed_documents method
+    def embed_documents(self, texts: List[str]):
+        limiter = rate_limit(self.requests_per_minute)
+        results = []
+        docs = list(texts)
+        
+        while docs:
+            # Working in batches because the API accepts maximum 5 documents per request to get embeddings
+            head, docs = (
+                docs[: self.num_instances_per_batch],
+                docs[self.num_instances_per_batch :],
+            )
+            chunk = self.client.get_embeddings(head)
+            results.extend(chunk)
+            next(limiter)
+        
+        
+        return [r.values for r in results]
+# Text model instance integrated with langChain
+llm = VertexAI(
+    model_name="text-bison@002",
+    max_output_tokens=1024,
+    temperature=0.2,
+    top_p=0.8,
+    top_k=40,
+    verbose=True,
+)
 
-    print(vectorstore)
-                # create conversation chain
-    st.session_state.conversation = get_conversation_chain(vectorstore)
-    
-    user_question = st.text_input("Ask a question about the CS department")
-    if user_question:
-        handle_userinput(user_question)
-            
-    
+# Embeddings API integrated with langChain
+EMBEDDING_QPM = 100
+EMBEDDING_NUM_BATCH = 5
+embeddings = CustomVertexAIEmbeddings(
+    requests_per_minute=EMBEDDING_QPM,
+    num_instances_per_batch=EMBEDDING_NUM_BATCH,
+)
 
-if __name__=='__main__':
-    main()
+# can declare as variables in terminal itself
+ME_REGION = "us-central1"
+ME_INDEX_NAME = "cs470-rag-llm-me-index"
+ME_EMBEDDING_DIR = "cs470-rag-llm-me-bucket"
+ME_DIMENSIONS = 768
+
+
+# dummy embedding
+init_embedding = {"id": str(uuid.uuid4()), "embedding": list(np.zeros(ME_DIMENSIONS))}
+
+# dump embedding to a local file
+with open("embeddings_0.json", "w") as f:
+    json.dump(init_embedding, f)
+
+
+aiplatform.init(project="cs470-rag-llm", location="us-central1", staging_bucket="gs://pdx_test_bucket")
+
+my_index = aiplatform.MatchingEngineIndex.create_tree_ah_index(
+    display_name="pdx-cs-ask-index",
+    contents_delta_uri="gs://cs470-rag-llm-me-bucket/init_index",
+    dimensions=ME_DIMENSIONS,
+    approximate_neighbors_count=150,
+    distance_measure_type="DOT_PRODUCT_DISTANCE",
+)
+
+my_index_endpoint = aiplatform.MatchingEngineIndexEndpoint.create(
+    display_name="pdx-cs-ask-endpoint",
+    public_endpoint_enabled=True,
+)
+
+my_index_endpoint.deploy_index(deployed_index_id="endpoint_test",index=my_index) """
+
+

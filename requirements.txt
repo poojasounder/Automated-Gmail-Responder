@@ -1,0 +1,12 @@
+google-cloud-aiplatform
+langchain
+langchain-google-vertexai
+unstructured
+pdf2image
+pytesseract
+pdfminer.six
+tensorflow_hub
+pillow-heif
+opencv-python
+unstructured-inference
+pikepdf
