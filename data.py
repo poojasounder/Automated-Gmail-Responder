@@ -74,7 +74,7 @@ def load_documents_json(filename):
         data = json.load(f)
     return [Document(**doc_dict) for doc_dict in data]
 
-### Functions below cost money ###
+### text_embedding and create_document_embedding cost money ###
 
 # Returns the embedding vector for a string
 def text_embedding(text: str):
