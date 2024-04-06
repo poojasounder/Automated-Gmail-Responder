@@ -1,0 +1,16 @@
+# llm
+langchain
+langchain_google_genai
+google-generativeai
+
+# database
+faiss-cpu
+
+# api
+fastapi
+uvicorn[standard]
+requests
+
+# utility
+python-dotenv
+PyPDF2
