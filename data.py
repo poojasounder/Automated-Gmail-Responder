@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from langchain.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain.schema import Document
 from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from vertexai.language_models import TextEmbeddingModel, TextGenerationModel
 
@@ -31,7 +32,7 @@ def strip_tags_and_whitespace(html):
     return ' '.join(soup.stripped_strings) #stripped_strings removes whitespace
 
 # Removes css and pdf files from Documents list
-def remove_extensions(documents):
+def remove_css_and_pdf(documents):
     extensions_removed = []
     for doc in documents:
         source = doc.metadata["source"]
@@ -46,12 +47,11 @@ def scrape(url, max_depth):
         url=url,
         max_depth=max_depth,
         prevent_outside=True,
-        timeout=500,
         check_response_status=True,
         extractor=strip_tags_and_whitespace
     )
     documents = loader.load()
-    documents = remove_extensions(documents)
+    documents = remove_css_and_pdf(documents)
 
     # Replace this with something else
     text_maker = html2text.HTML2Text()
@@ -74,39 +74,18 @@ def load_documents_json(filename):
         data = json.load(f)
     return [Document(**doc_dict) for doc_dict in data]
 
-### text_embedding and create_document_embedding cost money ###
-
-# Returns the embedding vector for a string
-def text_embedding(text: str):
-    embeddings = embedding_model.get_embeddings([text])
-    return embeddings[0].values # get_embeddings returns a list
-
-# Takes in a Document list and returns a numpy array of embeddings
-def create_document_embedding(documents, filename):
-    embedding_list = []
-    for doc in documents:
-        embedding_list.append(text_embedding(doc.page_content))
-    numpy_array = np.array(embedding_list)
-    np.save(filename, numpy_array)
-    return numpy_array
-
-def load_document_embeddings(filename):
-    loaded_array = np.load(filename)
-    return loaded_array
-
-def create_faiss(embeddings):
-    index = faiss.IndexFlatL2(DIMENSION)
-    index.add(embeddings)
-    return index
-
 if __name__ == "__main__":
-    website = "https://www.pdx.edu/computer-science/"
-    documents = scrape(website, DEPTH)
-    documents = remove_extensions(documents)
-    save_documents_json(documents, DOC_FILE)
+#    website = "https://www.pdx.edu/computer-science/"
+#    documents = scrape(website, DEPTH)
+#    save_documents_json(documents, DOC_FILE)
+#    embeddings = create_document_embedding(loaded_documents, EMBED_FILE)
     loaded_documents = load_documents_json(DOC_FILE)
-    embeddings = create_document_embedding(loaded_documents, EMBED_FILE)
-    loaded_embeddings = load_document_embeddings(EMBED_FILE)
-    print(loaded_embeddings)
-    print("Number of embeddings: ", len(loaded_embeddings))
-    db = create_faiss(embeddings)
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+    db = FAISS.from_documents(loaded_documents, embeddings)
+    relevant_docs = db.similarity_search(
+        query="What is the University Covid response?",
+        k=5,
+    )
+    print(relevant_docs)
