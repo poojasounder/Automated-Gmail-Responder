@@ -52,7 +52,8 @@ db.save_local("faiss_index")
 vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
 # Sanity check with similarity_search
-test_docs = vector_store.similarity_search("What is the Federal Work-Study Program?",k=3)
+query = "Can I still apply if I miss the application deadline?"
+test_docs = vector_store.similarity_search(query, k=3)
 print(test_docs)
 
 
