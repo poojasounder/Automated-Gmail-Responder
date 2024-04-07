@@ -51,9 +51,12 @@ db = FAISS.from_documents(pages, embeddings)
 db.save_local("faiss_index")
 vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
+# Sanity check with similarity_search
 test_docs = vector_store.similarity_search("What is the Federal Work-Study Program?",k=3)
 print(test_docs)
 
+
+# Rest of code copied from data-new test.py
 retriever = vector_store.as_retriever()
 llm = GoogleGenerativeAI(model="gemini-pro")
     
