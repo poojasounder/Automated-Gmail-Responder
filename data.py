@@ -100,15 +100,12 @@ website = "https://pdx.edu/computer-science/"
 scraped_data = scrape(website, MAX_DEPTH)
 print("Number of pages:", len(scraped_data))
 
-# Create FAISS
 db = FAISS.from_documents(scraped_data, embeddings)
 print("FAISS created")
 
-# Save FAISS to disk
 db.save_local(INDEX)
 print("FAISS saved")
 
-# Load FAISS from disk
 vector_store = FAISS.load_local(INDEX, embeddings, allow_dangerous_deserialization=True)
 print("FAISS loaded")
 
