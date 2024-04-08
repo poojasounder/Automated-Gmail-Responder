@@ -1,5 +1,5 @@
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain_google_genai import GoogleGenerativeAIEmbeddings,GoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
