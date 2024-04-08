@@ -21,4 +21,4 @@ if __name__ == "__main__":
     response email to the student with answers to their questions based on the given context: {context}
     '''
     
-    
+    llm = GoogleGenerativeAI(model="gemini-pro")
