@@ -1,9 +1,11 @@
 from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAI,GoogleGenerativeAIEmbeddings
 from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
-
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
 if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
@@ -12,7 +14,8 @@ if __name__ == "__main__":
         embedding_function=GoogleGenerativeAIEmbeddings(model="models/embedding-001", task_type="retrieval_query"),
         persist_directory="./.chromadb"
     )
-    
+    #initialized the llm model
+    llm = GoogleGenerativeAI(model="gemini-pro")
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
     query = "Am I eligible for Grad Prep as an international student?"
@@ -21,13 +24,16 @@ if __name__ == "__main__":
     to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a 
     response email to the student with answers to their questions based on the given context: {context}
     '''
-
-    #initialized the llm model
-    llm = GoogleGenerativeAI(model="gemini-pro")
-    
-    qa_chain = RetrievalQA.from_chain_type(
-    llm, retriever=vectorstore.as_retriever(),  chain_type="stuff"
+    prompt = PromptTemplate(
+        input_variables=["email", "context"],
+        template=rag_prompt
     )
     
-    result = qa_chain({"query": query})
-    print(result["result"])
+    #qa_chain = RetrievalQA.from_chain_type(
+    #llm, retriever=vectorstore.as_retriever(),  chain_type="stuff"
+    #)
+    
+    #result = qa_chain({"query": query})
+    #print(result["result"])
+    result = llm.invoke(prompt.format(email=query,context=format_docs(docs)))
+    print(result)
