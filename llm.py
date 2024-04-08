@@ -1,12 +1,13 @@
 from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAI,GoogleGenerativeAIEmbeddings
-from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
+# format the documents
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
+# run the llm
 def run(llm,prompt,email,docs):
     result = llm.invoke(prompt.format(email=email,context=format_docs(docs)))
     return result
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
     
+    #grabbing the embeddings
     vectorstore = Chroma(
         embedding_function=GoogleGenerativeAIEmbeddings(model="models/embedding-001", task_type="retrieval_query"),
         persist_directory="./.chromadb"
@@ -30,7 +32,9 @@ if __name__ == "__main__":
     docs = retriever.get_relevant_documents(email) # Get relevant documents based on the query(success)
     rag_prompt = '''Your name is Ella and you are a CS graduate advisor at Portland State University. Your job is to respond
     to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a
-    response email in a more organized way with numbering to the student with answers to their questions based on the given context: {context}
+    response email in a more organized way with numbering and correct tab spacing to the student with answers to their questions based on the given 
+    context: {context}
+    Use the keyboard shortcuts to bold or italicize and underline text.Don't include the questions in your response.
     '''
     prompt = PromptTemplate(
         input_variables=["email", "context"],
@@ -39,4 +43,4 @@ if __name__ == "__main__":
     
     # invoke the llm model
     result = run(llm,prompt,email,docs) # invoke the model(success)
-    print(result)
+    print(result) # might delete later when integrating with frontend
