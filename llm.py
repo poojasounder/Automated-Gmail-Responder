@@ -15,7 +15,7 @@ if __name__ == "__main__":
     
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
-    query = "What are the admission requirements?"
+    query = "Am I eligible for Grad Prep as an international student?"
     docs = retriever.get_relevant_documents(query) # Get relevant documents based on the query(success)
     rag_prompt = '''Your name is Ella and you are a CS graduate advisor at Portland State University. Your job is to respond
     to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a 
