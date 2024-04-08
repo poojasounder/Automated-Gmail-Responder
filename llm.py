@@ -6,6 +6,11 @@ from dotenv import load_dotenv
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
+
+def run(llm,prompt,email,docs):
+    result = llm.invoke(prompt.format(email=email,context=format_docs(docs)))
+    return result
+
 if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
@@ -18,22 +23,20 @@ if __name__ == "__main__":
     llm = GoogleGenerativeAI(model="gemini-pro")
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
-    query = "Am I eligible for Grad Prep as an international student?"
-    docs = retriever.get_relevant_documents(query) # Get relevant documents based on the query(success)
+    email = """Hi Ella, 
+                I do have a few questions.
+                Am I eligible for Grad Prep as an international student? and What if my previous degree is not in CS? 
+                Thanks,Pooja"""
+    docs = retriever.get_relevant_documents(email) # Get relevant documents based on the query(success)
     rag_prompt = '''Your name is Ella and you are a CS graduate advisor at Portland State University. Your job is to respond
-    to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a 
-    response email to the student with answers to their questions based on the given context: {context}
+    to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a
+    response email in a more organized way with numbering to the student with answers to their questions based on the given context: {context}
     '''
     prompt = PromptTemplate(
         input_variables=["email", "context"],
         template=rag_prompt
     )
     
-    #qa_chain = RetrievalQA.from_chain_type(
-    #llm, retriever=vectorstore.as_retriever(),  chain_type="stuff"
-    #)
-    
-    #result = qa_chain({"query": query})
-    #print(result["result"])
-    result = llm.invoke(prompt.format(email=query,context=format_docs(docs)))
+    # invoke the llm model
+    result = run(llm,prompt,email,docs) # invoke the model(success)
     print(result)
