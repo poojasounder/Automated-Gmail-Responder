@@ -27,14 +27,14 @@ if __name__ == "__main__":
     retriever = vectorstore.as_retriever()
     email = """Hi Ella, 
                 I do have a few questions.
-                Am I eligible for Grad Prep as an international student? and What if my previous degree is not in CS? 
+                What is the University coronavirus response? 
                 Thanks,Pooja"""
     docs = retriever.get_relevant_documents(email) # Get relevant documents based on the query(success)
+    
     rag_prompt = '''Your name is Ella and you are a CS graduate advisor at Portland State University. Your job is to respond
     to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a
     response email in a more organized way with numbering and correct tab spacing to the student with answers to their questions based on the given 
     context: {context}
-    Use the keyboard shortcuts to bold or italicize and underline text.Don't include the questions in your response.
     '''
     prompt = PromptTemplate(
         input_variables=["email", "context"],
