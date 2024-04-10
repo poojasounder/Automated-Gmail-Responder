@@ -28,7 +28,7 @@ def extract_text(html):
         return article_tag.get_text(' ', strip=True)
     div_contents = soup.find("div", id="contents")
     if div_contents:
-         return div_contents.get_text(' ', strip=True)
+        return div_contents.get_text(' ', strip=True)
     return ' '.join(soup.stripped_strings)
 def scrape(url, max_depth):
     """Scrapes given URL and returns list of Document objects"""
@@ -71,6 +71,6 @@ if __name__ == "__main__":
     vectorstore.add_documents(documents=chunks) # Added vectorstore (success)
     
     # Scrape sites
-    website = "https://pdx.edu/computer-science/graduate"
+    website = "https://pdx.edu/computer-science/"
     scraped_data = scrape(website, 4)
     vectorstore.add_documents(documents=scraped_data) # Added vectorstore of cs_website(success)

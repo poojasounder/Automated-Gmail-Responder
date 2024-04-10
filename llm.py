@@ -25,16 +25,28 @@ if __name__ == "__main__":
     llm = GoogleGenerativeAI(model="gemini-pro")
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
-    email = """Hi Ella, 
+    email = """Hi Ella,
                 I do have a few questions.
-                What is the University coronavirus response? 
+                I am an international student so I am wondering what are the admission requirements for me for the masters program?
                 Thanks,Pooja"""
     docs = retriever.get_relevant_documents(email) # Get relevant documents based on the query(success)
     
-    rag_prompt = '''Your name is Ella and you are a CS graduate advisor at Portland State University. Your job is to respond
-    to student's emails regarding questions about CS graduate programs at Portland State. Given the following email: {email}, write a
-    response email in a more organized way with numbering and correct tab spacing to the student with answers to their questions based on the given 
+    rag_prompt = '''
+    Your name is Ella and you are a CS graduate advisor at Portland State University. 
+    Your job is to respond to student's emails regarding questions about CS graduate programs at Portland State. 
+    Given the following email: {email}, write a response email to the student in the format similar to below with answers to their questions based on the given
     context: {context}
+    I want the response to not sound robotic.
+    For example:
+    Email: Hi Ella, I do have a few questions. What are the admission requirements? Thanks,Pooja
+    Response: 
+    Hi Pooja,
+    Thanks for reaching out. I am happy to provide you with the answers to your questions.
+    The admission requirements for our CS graduate program are:
+    1. A bachelor's degree in computer science or a related field from an accredited university.
+    2. A GPA of 3.0 or higher.
+    3. GRE scores of at least 150 verbal and 150 quantitative.
+    4. A personal statement.
     '''
     prompt = PromptTemplate(
         input_variables=["email", "context"],
