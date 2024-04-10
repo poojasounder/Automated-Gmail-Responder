@@ -8,6 +8,20 @@ from langchain_community.document_loaders import RecursiveUrlLoader
 from langchain.schema import Document
 import json
 SCRAPED_DATA = "cs-website-scraped/scraped_data.json"
+def remove_css(documents):
+    """Removes css and pdf files from Documents list"""
+    extensions_removed = []
+
+    for doc in documents:
+        source = doc.metadata['source']
+        add = True
+        for extension in ".css":
+            if source.endswith(extension):
+                add = False
+        if add:
+            extensions_removed.append(doc)
+
+    return extensions_removed
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
@@ -42,6 +56,7 @@ def scrape(url, max_depth):
     )
 
     documents = loader.load()
+    documents = remove_css(documents)
     save_documents_json(documents, SCRAPED_DATA)
     return documents
 

@@ -27,7 +27,7 @@ if __name__ == "__main__":
     retriever = vectorstore.as_retriever()
     email = """Hi Ella,
                 I do have a few questions.
-                I am an international student so I am wondering what are the admission requirements for me for the masters program?
+                What is the university's chronavirus requirements?
                 Thanks,Pooja"""
     docs = retriever.get_relevant_documents(email) # Get relevant documents based on the query(success)
     
