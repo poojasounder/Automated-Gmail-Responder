@@ -39,7 +39,7 @@ if __name__ == "__main__":
     Answer like a human and do not include any special characters except bullet points.
     For example:
     Email: Hi Ella, I do have a few questions. What are the admission requirements? Thanks,Pooja
-    Response: 
+    Response:
     Hi Pooja,
     Thanks for reaching out. I am happy to provide you with the answers to your questions.
     The admission requirements for our CS graduate program are:
