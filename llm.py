@@ -27,7 +27,7 @@ if __name__ == "__main__":
     retriever = vectorstore.as_retriever()
     email = """Hi Ella,
                 I do have a few questions.
-                What is the university's chronavirus requirements?
+                What are the admission requirements?
                 Thanks,Pooja"""
     docs = retriever.get_relevant_documents(email) # Get relevant documents based on the query(success)
     
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     Your job is to respond to student's emails regarding questions about CS graduate programs at Portland State. 
     Given the following email: {email}, write a response email to the student in the format similar to below with answers to their questions based on the given
     context: {context}
-    I want the response to not sound robotic.
+    Answer like a human and do not include any special characters except bullet points.
     For example:
     Email: Hi Ella, I do have a few questions. What are the admission requirements? Thanks,Pooja
     Response: 
@@ -47,6 +47,10 @@ if __name__ == "__main__":
     2. A GPA of 3.0 or higher.
     3. GRE scores of at least 150 verbal and 150 quantitative.
     4. A personal statement.
+    Best Regards,
+    Ella
+    CS graduate advisor
+    Portland State University
     '''
     prompt = PromptTemplate(
         input_variables=["email", "context"],
