@@ -1,73 +1,82 @@
-from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain_community.document_loaders import PyPDFDirectoryLoader,AsyncHtmlLoader
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
-from bs4 import BeautifulSoup
-from langchain_community.document_loaders import RecursiveUrlLoader
-from langchain.schema import Document
-import json
-SCRAPED_DATA = "cs-website-scraped/scraped_data.json"
-def remove_css(documents):
-    """Removes css and pdf files from Documents list"""
-    extensions_removed = []
+import PyPDF2
+import os
+import shutil
+import requests
+from pyhtml2pdf import converter
 
-    for doc in documents:
-        source = doc.metadata['source']
-        add = True
-        for extension in ".css":
-            if source.endswith(extension):
-                add = False
-        if add:
-            extensions_removed.append(doc)
+def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
+    start_page = None
+    end_page = None
 
-    return extensions_removed
-def save_documents_json(documents, filename):
-    """Saves list of Documents as JSON file"""
-    data = [doc.dict() for doc in documents]
-    with open(filename, 'w+') as f:
-        json.dump(data, f)
+    with open(input_pdf_path, "rb") as input_file:
+        pdf_reader = PyPDF2.PdfReader(input_file)
 
-def load_documents_json(filename):
-    """Reads a JSON file and returns a list of Documents"""
-    with open(filename, 'r') as f:
-        data: list = json.load(f)
-    return [Document(**doc_dict) for doc_dict in data]
+        for page_number in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_number]
+            text = page.extract_text()
 
-def extract_text(html):
-    """Used by RecursiveURLLoader to extract text"""
-    soup = BeautifulSoup(html, "html.parser")
-    article_tag = soup.find("article")
-    if article_tag:
-        return article_tag.get_text(' ', strip=True)
-    div_contents = soup.find("div", id="contents")
-    if div_contents:
-        return div_contents.get_text(' ', strip=True)
-    return ' '.join(soup.stripped_strings)
-def scrape(url, max_depth):
-    """Scrapes given URL and returns list of Document objects"""
-    loader = RecursiveUrlLoader(
-        url=url,
-        max_depth=max_depth,
-        timeout=15,
-        prevent_outside=True,
-        check_response_status=True,
-        extractor=extract_text
-    )
+            if start_keyword in text and start_page is None:
+                start_page = page_number + 1  # Adjust to 1-based indexing
+            elif end_keyword in text:
+                end_page = page_number + 1  # Adjust to 1-based indexing
+                break
 
-    documents = loader.load()
-    documents = remove_css(documents)
-    save_documents_json(documents, SCRAPED_DATA)
-    return documents
+    return start_page, end_page
+def extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page):
+    with open(input_pdf_path, "rb") as input_file, open(output_pdf_path, "wb") as output_file:
+        pdf_reader = PyPDF2.PdfReader(input_file)
+        pdf_writer = PyPDF2.PdfWriter()
 
+        for page_number in range(start_page - 1, end_page):  # Adjust to 0-based indexing
+            pdf_writer.add_page(pdf_reader.pages[page_number])
 
-def load_documents(dir):
+        pdf_writer.write(output_file)
+
+def convert_to_pdf(file):
+
+    output_directory = "load_documents"
+    os.makedirs(output_directory, exist_ok=True)
+    # Read URLs from file
+    with open(file, "r") as file:
+        urls = file.readlines()
+    index = 1
+    # Process each URL
+    for url in urls:
+        
+        url = url.strip()  # Remove leading/trailing whitespaces
+        if url:  # Skip empty lines
+            if url.lower().endswith(".pdf"):
+                # Extract filename from URL
+                filename = os.path.basename(url)
+                # Download the PDF file from the URL
+                response = requests.get(url)
+                if response.status_code == 200:
+                    # Save the PDF file to a temporary location
+                    temp_file_path = os.path.join(output_directory, filename)
+                    with open(temp_file_path, 'wb') as f:
+                        f.write(response.content)
+                    # Move the temporary file to the destination directory
+                    shutil.move(temp_file_path, os.path.join(output_directory, filename))
+                    print(f"PDF file downloaded and uploaded successfully: {filename}")
+                else:
+                    print(f"Failed to download PDF file from URL: {url}")
+            else:
+                converter.convert(url, f"./load_documents/doc-{index}.pdf")
+                index = index + 1
+    return None
+
+def load_pdf_documents(dir):
     loader = PyPDFDirectoryLoader(dir)
     docs = loader.load()
     return docs
 
 def chunking(documents):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_documents(documents)
     return chunks
 
@@ -81,11 +90,29 @@ if __name__ == "__main__":
     persist_directory="./.chromadb"
     )
     
-    docs = load_documents("documents(pdf)") # Load all documents in the directory(success)
-    chunks = chunking(docs) # Split documents into chunks(success)
-    vectorstore.add_documents(documents=chunks) # Added vectorstore (success)
+    # Provide the path to your input PDF file
+    input_pdf_path = "./Upload_documents/Bulletin.pdf"
+    # Find the start and end page numbers
+    start_page, end_page = find_page_numbers(input_pdf_path, "COMPUTER SCIENCE M.S.", "Electrical and Computer Engineering")
+
+    # Provide the path for the output PDF file
+    output_pdf_path = "./load_documents/bulletin_cs.pdf"
+
+    # Extract and save the specified pages as a new PDF file
+    if start_page is not None and end_page is not None:
+        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
+        
+    start_page, end_page = find_page_numbers(input_pdf_path,"Portland State University", "UNDERGRADUATE STUDIES")
+    # Provide the path for the output PDF file
+    output_pdf_path = "./load_documents/Finance.pdf"
+
+    # Extract and save the specified pages as a new PDF file
+    if start_page is not None and end_page is not None:
+        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
     
-    # Scrape sites
-    website = "https://pdx.edu/computer-science/"
-    scraped_data = scrape(website, 4)
-    vectorstore.add_documents(documents=scraped_data) # Added vectorstore of cs_website(success)
+    convert_to_pdf('./Upload_documents/urls.txt')
+    docs = load_pdf_documents("load_documents") # Load all documents in the directory(success)
+    chunks = chunking(docs) # Split documents into chunks(success)
+    vectorstore.add_documents(chunks) # Added vectorstore (success)
+    #splits = chunking(docs_from_urls) # Split documents into chunks(success)
+    #vectorstore.add_documents(documents=splits) # Added vectorstore (success)
