@@ -3,6 +3,8 @@ from langchain_google_genai import GoogleGenerativeAI,GoogleGenerativeAIEmbeddin
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 
 # format the documents
 def format_docs(docs):
@@ -26,7 +28,7 @@ if __name__ == "__main__":
     llm = GoogleGenerativeAI(model="gemini-pro")
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
-    email = "Hi Ella, my name is Julie Nguyen and I am interested in the Graduate program. I wanted to know what the requirements are to be admitted into the program. I have a 2.9 GPA and 1 year experience from my internship at Intel. I want to learn more about Computer Science and thrive with my future career in game development. Thank you! Best regards, Julie Nguyen"
+    email = "Hi Ella, my name is Julie Nguyen and I am interested in the Graduate program. I have a few questions about the program. Can you tell me more about the courses offered in the program? Also, I would like to know about the admission requirements and the application process. Thank you."
     docs = vectorstore.similarity_search(email,k=3) # Get relevant documents based on the query(success)
     rag_prompt = '''
     Your role: You are a CS Graduate Advisor at Portland State University
@@ -44,11 +46,18 @@ if __name__ == "__main__":
     # invoke the llm model
     #result = run(llm, prompt, email, docs)
     #print(result) # might delete later when integrating with frontend
-    qa_chain = RetrievalQA.from_chain_type(
+    """ qa_chain = RetrievalQA.from_chain_type(
         llm,
         retriever=vectorstore.as_retriever(),
         return_source_documents=True,
-        chain_type_kwargs={"prompt": prompt}
+        chain_type_kwargs={"prompt": prompt},
+    ) """
+    
+    rag_chain = (
+        {"context": retriever | format_docs, "email": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
     )
-    result = qa_chain({"email": email, "context": format_docs(docs)})
-    result["result"]
+    result = rag_chain.invoke(email)
+    print(result)
