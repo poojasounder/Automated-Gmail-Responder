@@ -7,6 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from fastapi import FastAPI
 from typing import Union
+from typing import Union
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -29,7 +30,8 @@ def run(llm,prompt,email,docs):
     return result
 
 @app.get("/")
-def aerllm():
+def aerllm(q:Union[str,None] = None):
+    email: str = None
     # loading environment variables
     load_dotenv()
 
@@ -42,7 +44,10 @@ def aerllm():
     llm = GoogleGenerativeAI(model="gemini-pro")
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
-    email = "Hi Ella, my name is Julie Nguyen and I am interested in the Graduate program. I have a few questions about the program. Can you tell me more about the courses offered in the program? Also, I would like to know about the admission requirements and the application process. Thank you."
+    if q is not None:
+        email = q
+    else:
+        raise ValueError("No valid question given")
     docs = vectorstore.similarity_search(email,k=3) # Get relevant documents based on the query(success)
     rag_prompt = '''
     Your role: You are a CS Graduate Advisor at Portland State University
