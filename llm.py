@@ -7,7 +7,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from fastapi import FastAPI
 from typing import Union
-from typing import Union
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -57,7 +56,7 @@ def aerllm(q:Union[str,None] = None):
     Email: {email}
     Context: {context}
 
-    If you need more information, please ask for it or if you don't have the context, 
+    If you need more information, please ask for it or if you don't have the context,
     you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
     If the questions are not related to computer science major, write an email response directing the student to the appropriate department.
     '''
