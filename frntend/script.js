@@ -75,12 +75,23 @@
       .then((response) => response.json())
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
-          document.querySelector(composeLocation).textContent = dta.response;
+          //document.querySelector(composeLocation).textContent = dta.response;
+          typeOutResponse(dta.response);
         }
       })
       .catch((error) => alert(error));
   }
-
+  // Typing out response character by character
+  function typeOutResponse(response) {
+    const composeContainer = document.querySelector(composeLocation);
+    let index = 0;
+    const interval = setInterval(function () {
+      composeContainer.textContent += response[index++];
+      if (index === response.length) {
+        clearInterval(interval);
+      }
+    }, 10); // Adjust typing speed here
+  }
   //Extracts text from email for future usage
   function extractBody() {
     const elements = document.querySelectorAll(bodyLocation);
@@ -90,7 +101,7 @@
     });
     return extractedBody;
   }
-
+  
   observePage();
   observeURLChanges();
 })();
