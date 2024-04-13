@@ -84,6 +84,11 @@
   // Typing out response character by character
   function typeOutResponse(response) {
     const composeContainer = document.querySelector(composeLocation);
+    if(!response){
+      console.log("No response from API");
+      injectBody();
+      return;
+    }
     let index = 0;
     const interval = setInterval(function () {
       composeContainer.textContent += response[index++];
