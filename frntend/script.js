@@ -71,7 +71,8 @@
 
   //aer-llm api request
   function injectBody() {
-    fetch(`http://127.0.0.1:8000?q=${query}`)
+		let question = extractBody();
+		fetch(`http://127.0.0.1:8000?q=${question}`)
       .then((response) => response.json())
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
@@ -80,7 +81,7 @@
         }
       })
       .catch((error) => alert(error));
-  }
+	}
   // Typing out response character by character
   function typeOutResponse(response) {
     const composeContainer = document.querySelector(composeLocation);
@@ -100,13 +101,15 @@
   //Extracts text from email for future usage
   function extractBody() {
     const elements = document.querySelectorAll(bodyLocation);
-    const extractedBody = [];
+    let extractedBody = new Array();
     elements.forEach((element) => {
-      extractedBody.push(element.textContent.trim());
+			Array.from(element.children).forEach((cont,index) => {
+				extractedBody.push(cont.textContent.trim());
+			});
     });
-    return extractedBody;
+    return extractedBody.slice(2)
   }
-  
+
   observePage();
   observeURLChanges();
 })();
