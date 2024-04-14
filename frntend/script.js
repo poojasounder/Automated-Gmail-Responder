@@ -76,7 +76,6 @@
       .then((response) => response.json())
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
-          //document.querySelector(composeLocation).textContent = dta.response;
           typeOutResponse(dta.response);
         }
       })
