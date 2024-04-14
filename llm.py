@@ -8,6 +8,7 @@ from langchain_core.runnables import RunnablePassthrough
 from fastapi import FastAPI
 from typing import Union
 from fastapi.middleware.cors import CORSMiddleware
+import re
 
 app = FastAPI()
 
@@ -78,4 +79,5 @@ def aerllm(q:Union[str,None] = None):
         | StrOutputParser()
     )
     result = rag_chain.invoke(email)
+    result = re.sub(r"\n", "<div><br></div>", result)
     return {"response": result}
