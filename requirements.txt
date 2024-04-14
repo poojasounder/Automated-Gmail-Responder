@@ -1,0 +1,7 @@
+langchain-community==0.0.32
+langchain-google-genai==1.0.2
+langchain==0.1.16
+chromadb==0.4.24
+pypdf==4.1.0
+PyPDF2==3.0.1
+fastapi==0.110.1
