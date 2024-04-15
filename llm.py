@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain.globals import set_llm_cache
+from langchain.cache import InMemoryCache
+from langchain.cache import SQLiteCache
+
 
 # format the documents
 def format_docs(docs):
@@ -25,16 +29,17 @@ if __name__ == "__main__":
         persist_directory="./.chromadb"
     )
     #initialized the llm model
-    llm = GoogleGenerativeAI(model="gemini-pro")
+    llm = GoogleGenerativeAI(model="gemini-1.0-pro")
     # to use the vectorstore
     retriever = vectorstore.as_retriever()
-    email = "Hi Ella, my name is Julie Nguyen and I am interested in the Graduate program. I have a few questions about the program. Can you tell me more about the courses offered in the program? Also, I would like to know about the admission requirements and the application process. Thank you."
+    email = "Hi ella, Could you go over some infor about the course CS-592?"
     docs = vectorstore.similarity_search(email,k=3) # Get relevant documents based on the query(success)
     rag_prompt = '''
     Your role: You are a CS Graduate Advisor at Portland State University
     Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs
     Task: Write an email response to the following email from a student with answers to their questions given the following context.
-    
+    If you want to provide a link to the student regarding the applicatio , provide the following link `https://www.pdx.edu/admissions/apply`
+    To direct them to the cs graduate program page, provide the following link `https://www.pdx.edu/computer-science/graduate`
     Email: {email}
     Context: {context}
     
@@ -44,8 +49,8 @@ if __name__ == "__main__":
     '''
     prompt = PromptTemplate.from_template(rag_prompt)
     # invoke the llm model
-    #result = run(llm, prompt, email, docs)
-    #print(result) # might delete later when integrating with frontend
+    result = run(llm, prompt, email, docs)
+    print(result) # might delete later when integrating with frontend
     """ qa_chain = RetrievalQA.from_chain_type(
         llm,
         retriever=vectorstore.as_retriever(),
@@ -53,11 +58,12 @@ if __name__ == "__main__":
         chain_type_kwargs={"prompt": prompt},
     ) """
     
-    rag_chain = (
-        {"context": retriever | format_docs, "email": RunnablePassthrough()}
+    """ rag_chain = (
+        {"context": retriever | format_docs(docs), "email": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
     result = rag_chain.invoke(email)
-    print(result)
+    set_llm_cache(SQLiteCache(database_path="./langchain.db"))
+    print(result) """
