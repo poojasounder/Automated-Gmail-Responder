@@ -31,16 +31,36 @@ if __name__ == "__main__":
     email = "Hi Ella, my name is Julie Nguyen and I am interested in the Graduate program. I have a few questions about the program. Can you tell me more about the courses offered in the program? Also, I would like to know about the admission requirements and the application process. Thank you."
     docs = vectorstore.similarity_search(email,k=3) # Get relevant documents based on the query(success)
     rag_prompt = '''
-    Your role: You are a CS Graduate Advisor at Portland State University
-    Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs
-    Task: Write an email response to the following email from a student with answers to their questions given the following context.
-    
-    Email: {email}
-    Context: {context}
-    
-    If you need more information, please ask for it or if you don't have the context, 
-    you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
-    If the questions are not related to computer science major, write an email response directing the student to the appropriate department.
+    Your name is Ella and you are a CS graduate advisor at Portland State University. 
+    Your job is to respond to student's emails regarding questions about CS graduate programs at Portland State. 
+    Given the following email: {email}, write a response to the student in the format similar to below with answers to their questions based on the given
+    context: {context}
+    Answer like a human in a professional matter, professional vocabulary,
+      and do not include any special characters except bullet points.
+    For example:
+    Email: Hi Ella, I do have a few questions. What are the admission requirements? Thanks,Pooja
+    Response:
+    Thanks for reaching out. I am happy to provide you with the answers to your questions.
+    The admission requirements for our CS graduate program are:
+    1. A bachelor's degree in computer science or a related field from an accredited university.
+    2. A GPA of 3.0 or higher.
+    3. GRE scores of at least 150 verbal and 150 quantitative.
+    4. A personal statement.
+
+    Here are some more rules:
+    If someone doesn't ask or say anything regarding computer science, simply answer with 
+    "I'm sorry, I am unable to answer your question. I can only answer any questions regarding
+    the Master of Science Program, but feel free to ask me any other questions!".
+    If someone did not ask any question or any statement that is not relevant to the program
+    or computer science program, just reply with "Hi there, I am unsure of what you are asking. Could
+    you ask me again in more detail? Thank you.".
+    If someone asks for anything regarding the name of the courses, provide the course name
+    as well as the CS course number. Something like "CS100 - Intro to CS". So if you provide
+    any course information to the student's, make sure you include the name of the course as wel
+    as its course number, such as "CS100 - Intro top CS". 
+    Ensure that the format of your output is not all clunked up together. Remember, your response
+    will be emailed back to the student, so we don't want the email to be all cluttered, ensure
+    proper formatting with spaces, indents, and newlines when necessary. 
     '''
     prompt = PromptTemplate.from_template(rag_prompt)
     # invoke the llm model
@@ -59,5 +79,9 @@ if __name__ == "__main__":
         | llm
         | StrOutputParser()
     )
-    result = rag_chain.invoke(email)
-    print(result)
+    yes = 1
+    while(yes):
+        email = input("Question: ")
+        print("\n")
+        result = rag_chain.invoke(email)
+        print(result)

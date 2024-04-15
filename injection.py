@@ -8,6 +8,7 @@ import os
 import shutil
 import requests
 from pyhtml2pdf import converter
+from bs4 import BeautifulSoup
 
 def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
     start_page = None
