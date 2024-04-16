@@ -76,7 +76,8 @@
       .then((response) => response.json())
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
-          //document.querySelector(composeLocation).textContent = dta.response;
+					let html = `<div>${dta.response}</div>`;
+          //document.querySelector(composeLocation).innerHTML = html;
           typeOutResponse(dta.response);
         }
       })
@@ -91,8 +92,11 @@
       return;
     }
     let index = 0;
+		let parser = "";
     const interval = setInterval(function () {
-      composeContainer.textContent += response[index++];
+			parser += response[index++];
+			html = `<div>${parser}</div>`;
+      composeContainer.innerHTML = html;
       if (index === response.length) {
         clearInterval(interval);
       }
