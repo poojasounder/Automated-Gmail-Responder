@@ -1,6 +1,5 @@
 (function () {
-	const query = "Hi Ella, my name is Julie Nguyen and I am interested in the Graduate program. I have a few questions about the program. Can you tell me more about the courses offered in the program? Also, I would like to know about the admission requirements and the application process. Thank you";
-
+	let dotsInterval;
   const bodyElement = document.body;
   const btnLocation = ".a8X.gU"; //Toolbar button container
   const bodyLocation = ".gs"; //Body of email container
@@ -69,15 +68,33 @@
       });
   }
 
+	 // Function to display loading dots in the text box
+    function displayLoadingDots() {
+    const composeContainer = document.querySelector(composeLocation);
+      let dots = '';
+      dotsInterval = setInterval(() => {
+        dots += '.';
+        composeContainer.textContent = dots;
+        if (dots.length > 3) {
+          dots = '';
+        }
+      }, 500);
+    }
+
+    // Function to stop displaying loading dots and set the actual response
+    function stopLoadingDots() {
+      clearInterval(dotsInterval);
+    }
+
   //aer-llm api request
   function injectBody() {
+		displayLoadingDots();
 		let question = extractBody();
 		fetch(`http://127.0.0.1:8000?q=${question}`)
       .then((response) => response.json())
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
-					let html = `<div>${dta.response}</div>`;
-          //document.querySelector(composeLocation).innerHTML = html;
+					stopLoadingDots();
           typeOutResponse(dta.response);
         }
       })

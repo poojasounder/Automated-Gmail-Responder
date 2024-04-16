@@ -1,3 +1,8 @@
+import re
+import subprocess
+from typing import Union
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAI,GoogleGenerativeAIEmbeddings
 from langchain.prompts import PromptTemplate
@@ -5,10 +10,15 @@ from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from fastapi import FastAPI
-from typing import Union
-from fastapi.middleware.cors import CORSMiddleware
-import re
+
+'''
+try:
+    subprocess.run(["python","injection.py"], bufsize=0)
+except subprocess.CalledProcessError as e:
+    print(f"Error while running the injection.py: {e}")
+except Exception as exception:
+    print(f"An unexpected error occured: {exception}")
+'''
 
 app = FastAPI()
 
