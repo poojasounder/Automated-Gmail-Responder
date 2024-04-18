@@ -10,7 +10,7 @@ import os
 import shutil
 import requests
 from pyhtml2pdf import converter
-
+# combine what's in the data.py on branch data to clean up the docs and chunking process.
 def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
     start_page = None
     end_page = None
