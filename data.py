@@ -1,7 +1,7 @@
 import json, os, pprint, re
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader, AsyncHtmlLoader
+from langchain_community.document_loaders import PyPDFLoader, AsyncHtmlLoader, AsyncChromiumLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, GoogleGenerativeAI
@@ -31,9 +31,9 @@ def load_documents_json(filename):
 def clean_text(text):
     """Extracts alphanumeric characters and cleans extra whitespace"""
     # Remove apostraphes
-    text = re.sub(r"['’]", "", text)
+    #text = re.sub(r"['’]", "", text)
     # Replace special characters with spaces
-    text = re.sub(r'[^\w\s]', ' ', text)
+    #text = re.sub(r'[^\w\s]', ' ', text)
     # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text).strip()
 
@@ -51,7 +51,7 @@ def scrape(filename):
         sites = [line.rstrip('\n') for line in file]
 
     # Scrapes list of sites
-    loader = AsyncHtmlLoader(sites)
+    loader = AsyncChromiumLoader(sites)
     loader.requests_kwargs = {'verify': False}
     docs = loader.load()
     # Extract article tag
