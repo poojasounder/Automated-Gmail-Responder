@@ -64,7 +64,8 @@ def scrape(filename):
     return docs_tr
 
 # Scrape sites
-documents = scrape('urls.txt')
+file = "urls.txt"
+documents = scrape(file)
 clean_documents(documents)
 save_documents_json(documents, SCRAPED_DATA)
 scraped_data = load_documents_json(SCRAPED_DATA)
