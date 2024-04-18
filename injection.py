@@ -1,9 +1,11 @@
 from langchain_community.document_loaders import PyPDFDirectoryLoader,AsyncHtmlLoader
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+#from langchain_mistral import Mistral7BEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
 import PyPDF2
+#import PyMuPDF
 import os
 import shutil
 import requests
@@ -76,7 +78,7 @@ def load_pdf_documents(dir):
     return docs
 
 def chunking(documents):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=2000)
     chunks = text_splitter.split_documents(documents)
     return chunks
 
