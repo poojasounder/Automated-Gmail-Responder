@@ -31,7 +31,7 @@ def load_documents_json(filename):
 def clean_text(text):
     """Extracts alphanumeric characters and cleans extra whitespace"""
     # Remove apostraphes
-    text = re.sub("'", "", text)
+    text = re.sub(r"['’]", "", text)
     # Replace special characters with spaces
     text = re.sub(r'[^\w\s]', ' ', text)
     # Remove extra whitespace
