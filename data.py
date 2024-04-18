@@ -46,11 +46,15 @@ def clean_documents(documents):
 
 def scrape(filename):
     """Scrapes URLs in given file and returns Documents"""
+    # Creates list of URLs
     with open(filename, 'r') as file:
         sites = [line.rstrip('\n') for line in file]
 
+    # Scrapes list of sites
     loader = AsyncHtmlLoader(sites)
+    loader.requests_kwargs = {'verify': False}
     docs = loader.load()
+    # Extract article tag
     transformer = BeautifulSoupTransformer()
     docs_tr = transformer.transform_documents(
         documents=docs,
