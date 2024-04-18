@@ -52,7 +52,10 @@ def scrape(filename):
     loader = AsyncHtmlLoader(sites)
     docs = loader.load()
     transformer = BeautifulSoupTransformer()
-    docs_tr = transformer.transform_documents(docs, tags_to_extract=['article'])
+    docs_tr = transformer.transform_documents(
+        documents=docs,
+        tags_to_extract=['article']
+    )
 
     return docs_tr
 
