@@ -64,7 +64,6 @@
     document
       .getElementById('capstone-button')
       .addEventListener('click', function (event) {
-        document.querySelector(composeLocation).textContent = 'Processing...';
         injectBody();
       });
   }
