@@ -30,10 +30,8 @@ def load_documents_json(filename):
 
 def clean_text(text):
     """Extracts alphanumeric characters and cleans extra whitespace"""
-    # Remove apostraphes
-    #text = re.sub(r"['’]", "", text)
-    # Replace special characters with spaces
-    #text = re.sub(r'[^\w\s]', ' ', text)
+    # Replace Unicode apostraphes
+    text = re.sub(r'[\u2018\u2019]', "'", text)
     # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text).strip()
 
@@ -67,8 +65,10 @@ def scrape(filename):
 file = "urls.txt"
 documents = scrape(file)
 clean_documents(documents)
+pprint.pp(documents)
 save_documents_json(documents, SCRAPED_DATA)
 scraped_data = load_documents_json(SCRAPED_DATA)
+pprint.pp(scraped_data)
 
 """
 text_splitter = RecursiveCharacterTextSplitter(
