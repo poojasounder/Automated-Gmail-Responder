@@ -106,7 +106,7 @@
     const composeContainer = document.querySelector(composeLocation);
     if (!response) {
       console.log('No response from API');
-      //injectBody(); infinite loop?
+      injectBody(); //infinite loop?
       return;
     }
     let index = 0;

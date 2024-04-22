@@ -1,5 +1,4 @@
 import re
-import subprocess
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,9 +6,9 @@ from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAI,GoogleGenerativeAIEmbeddings
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
-from langchain.chains import RetrievalQA
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain.chains.question_answering import load_qa_chain
 
 '''
 try:
@@ -63,15 +62,19 @@ def aerllm(q:Union[str,None] = None):
     Your role: You are a CS Graduate Advisor at Portland State University
     Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs
     Task: Write an email response to the following email from a student with answers to their questions given the following context.
-
+    There is no link for credit by exam process.
+    
     Email: {email}
     Context: {context}
-
+    
     If you need more information, please ask for it or if you don't have the context,
     you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
     If the questions are not related to computer science major, write an email response directing the student to the appropriate department.
     '''
-    prompt = PromptTemplate.from_template(rag_prompt)
+    
+    prompt = PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
+
+    chain = load_qa_chain(llm, chain_type="stuff", prompt = prompt)
     # invoke the llm model
     #result = run(llm, prompt, email, docs)
     #print(result) # might delete later when integrating with frontend
@@ -82,12 +85,9 @@ def aerllm(q:Union[str,None] = None):
         chain_type_kwargs={"prompt": prompt},
     ) """
 
-    rag_chain = (
-        {"context": retriever | format_docs, "email": RunnablePassthrough()}
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
-    result = rag_chain.invoke(email)
-    result = re.sub(r"\n", "<div><br></div>", result)
-    return {"response": result}
+    response = chain.invoke ({
+        "input_documents": docs,
+        "email": email
+    }, return_only_outputs=True)
+    response["output_text"] = re.sub(r"\n", "<div><br></div>", response["output_text"])
+    return {"response": response["output_text"]}
