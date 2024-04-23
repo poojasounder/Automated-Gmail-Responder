@@ -57,19 +57,18 @@ def aerllm(q:Union[str,None] = None):
         email = q
     else:
         raise ValueError("No valid question given")
-    docs = vectorstore.similarity_search(email,k=3) # Get relevant documents based on the query(success)
+    docs = vectorstore.similarity_search(email) # Get relevant documents based on the query(success)
     rag_prompt = '''
     Your role: You are a CS Graduate Advisor at Portland State University
     Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs
     Task: Write an email response to the following email from a student with answers to their questions given the following context.
-    There is no link for credit by exam process.
     
     Email: {email}
     Context: {context}
     
     If you need more information, please ask for it or if you don't have the context,
     you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
-    If the questions are not related to computer science major, write an email response directing the student to the appropriate department.
+    Include all relevant infomation in your response.
     '''
     
     prompt = PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
