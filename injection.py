@@ -170,7 +170,8 @@ if __name__ == "__main__":
     clean_documents(documents)
     save_documents_json(documents, './scraped_data.json')
     scraped_data = load_documents_json('./scraped_data.json')
-    vectorstore.add_documents(scraped_data)
+    chunks = chunking(scraped_data)
+    vectorstore.add_documents(chunks)
     
     #convert_to_pdf('./Upload_documents/urls.txt')
     docs = load_pdf_documents("load_documents") # Load all documents in the directory(success)
