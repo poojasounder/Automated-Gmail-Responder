@@ -1,14 +1,13 @@
-import json, os, pprint, re
+import json, os, pprint, re, unidecode
 from bs4 import BeautifulSoup
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader, AsyncHtmlLoader, AsyncChromiumLoader
+from langchain_community.document_loaders import AsyncChromiumLoader
+from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
-from langchain_community.vectorstores import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, GoogleGenerativeAI
 from langchain.schema import Document
 
 SCRAPED_DATA = "documents/scraped_data.json"
-PERSIST = "./.chromadb"
+SCRAPED_BULLETIN = "documents/scraped_bulletin.json"
+
 
 def files(path):
     """Returns filenames in given path"""
@@ -16,69 +15,91 @@ def files(path):
         if os.path.isfile(os.path.join(path, file)):
             yield file
 
+
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
-    with open(filename, 'w+') as f:
+    with open(filename, "w+") as f:
         json.dump(data, f)
+
 
 def load_documents_json(filename):
     """Reads a JSON file and returns a list of Documents"""
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         data: list = json.load(f)
     return [Document(**doc_dict) for doc_dict in data]
 
+
 def clean_text(text):
     """Extracts alphanumeric characters and cleans extra whitespace"""
-    # Replace Unicode apostraphes
-    text = re.sub(r'[\u2018\u2019]', "'", text)
+    # Convert Unicode to ASCII
+    text = unidecode.unidecode(text)
     # Remove extra whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-
+    text = re.sub(r"\s+", " ", text).strip()
     return text
+
 
 def clean_documents(documents):
     """Cleans page_content text of Documents list"""
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
 
-def scrape(filename):
-    """Scrapes URLs in given file and returns Documents"""
+
+def scrape_article(filename):
+    """Scrapes URLs listed in file, extracts article tag, returns Documents"""
     # Creates list of URLs
-    with open(filename, 'r') as file:
-        sites = [line.rstrip('\n') for line in file]
+    with open(filename, "r") as file:
+        sites = [line.rstrip("\n") for line in file]
 
     # Scrapes list of sites
     loader = AsyncChromiumLoader(sites)
-    loader.requests_kwargs = {'verify': False}
+    loader.requests_kwargs = {"verify": False}
     docs = loader.load()
     # Extract article tag
     transformer = BeautifulSoupTransformer()
-    docs_tr = transformer.transform_documents(
-        documents=docs,
-        tags_to_extract=['article']
+    docs_transformed = transformer.transform_documents(
+        documents=docs, tags_to_extract=["article"]
     )
+    clean_documents(docs_transformed)
+    return docs_transformed
 
-    return docs_tr
 
-# Scrape sites
-file = "urls.txt"
-documents = scrape(file)
+def extract_text(html):
+    """Used by loader to extract text from div tag with id of main"""
+    soup = BeautifulSoup(html, "html.parser")
+    div_main = soup.find("div", {"id": "main"})
+    if div_main:
+        return div_main.get_text(" ", strip=True)
+    return " ".join(soup.stripped_strings)
+
+
+def scrape_recursive(url, depth):
+    """Recursively scrapes URL and returns Documents"""
+    loader = RecursiveUrlLoader(
+        url=url,
+        max_depth=depth,
+        use_async=True,
+        prevent_outside=True,
+        check_response_status=True,
+        continue_on_failure=True,
+        extractor=extract_text,
+    )
+    docs = loader.load()
+    clean_documents(docs)
+    return docs
+
+
+"""
+sites = "urls.txt"
+documents = scrape_article(sites)
 clean_documents(documents)
 pprint.pp(documents)
 save_documents_json(documents, SCRAPED_DATA)
 scraped_data = load_documents_json(SCRAPED_DATA)
 pprint.pp(scraped_data)
-
 """
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=10000,
-    chunk_overlap=1000,
-    length_function=len
-)
 
-vectorstore = Chroma(
-    embedding_function=GoogleGenerativeAIEmbeddings(model="models/embedding-001", task_type="retrieval_query"),
-    persist_directory=PERSIST
-)
-"""
+bulletin = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/"
+docs_bulletin = scrape_recursive(bulletin, 9)
+save_documents_json(docs_bulletin, SCRAPED_BULLETIN)
+pprint.pp(docs_bulletin)
