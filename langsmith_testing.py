@@ -15,27 +15,22 @@ LANGCHAIN_API_KEY = os.environ["LANGCHAIN_API_KEY"]
 
 @traceable
 def init_vectorstore():
-    vectorstore = Chroma(
+    return Chroma(
         embedding_function=GoogleGenerativeAIEmbeddings(
             model="models/embedding-001", task_type="retrieval_query"
         ),
         persist_directory="./.chromadb",
     )
-    return vectorstore
 
 
 @traceable
 def init_llm():
-    llm = GoogleGenerativeAI(model="gemini-pro")
-    return llm
+    return GoogleGenerativeAI(model="gemini-pro", temperature=0)
 
 
 @traceable
 def search_vectorstore(vectorstore, email):
-    docs = vectorstore.similarity_search(
-        email
-    )  # Get relevant documents based on the query(success)
-    return docs
+    return vectorstore.similarity_search(email)
 
 
 @traceable
@@ -53,8 +48,7 @@ def init_prompt():
     Include all relevant infomation in your response.
     """
 
-    prompt = PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
-    return prompt
+    return PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
 
 
 @traceable
@@ -111,6 +105,7 @@ if __name__ == "__main__":
 
     vectorstore = init_vectorstore()
     llm = init_llm()
-    docs = search_vectorstore(vectorstore, llm)
+    docs = search_vectorstore(vectorstore, email)
     prompt = init_prompt()
-    generate_response(llm, prompt, email, docs)
+    response = generate_response(llm, prompt, email, docs)
+    print(response)
