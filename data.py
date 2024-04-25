@@ -103,3 +103,4 @@ bulletin = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/"
 docs_bulletin = scrape_recursive(bulletin, 9)
 save_documents_json(docs_bulletin, SCRAPED_BULLETIN)
 pprint.pp(docs_bulletin)
+print("Number of bulletin pages:", docs_bulletin)
