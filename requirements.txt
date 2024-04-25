@@ -1,4 +1,4 @@
 beautifulsoup4==4.12.3
-langchain==0.1.14
-langchain_community==0.0.31
-langchain_google_genai==1.0.1
+langchain==0.1.16
+langchain_community==0.0.34
+Unidecode==1.3.8

@@ -1,4 +1,4 @@
-import json, os, pprint, re, unidecode
+import json, os, re, unidecode
 from bs4 import BeautifulSoup
 from langchain_community.document_loaders import AsyncChromiumLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
@@ -102,5 +102,4 @@ pprint.pp(scraped_data)
 bulletin = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/"
 docs_bulletin = scrape_recursive(bulletin, 9)
 save_documents_json(docs_bulletin, SCRAPED_BULLETIN)
-pprint.pp(docs_bulletin)
-print("Number of bulletin pages:", docs_bulletin)
+print("Number of bulletin pages:", len(docs_bulletin))
