@@ -6,8 +6,6 @@ from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
 
 SCRAPED_DATA = "documents/scraped_data.json"
-SCRAPED_BULLETIN = "documents/scraped_bulletin.json"
-
 
 def files(path):
     """Returns filenames in given path"""
@@ -89,17 +87,11 @@ def scrape_recursive(url, depth):
     return docs
 
 
-"""
 sites = "urls.txt"
-documents = scrape_article(sites)
-clean_documents(documents)
-pprint.pp(documents)
-save_documents_json(documents, SCRAPED_DATA)
-scraped_data = load_documents_json(SCRAPED_DATA)
-pprint.pp(scraped_data)
-"""
-
-bulletin = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/"
-docs_bulletin = scrape_recursive(bulletin, 9)
-save_documents_json(docs_bulletin, SCRAPED_BULLETIN)
-print("Number of bulletin pages:", len(docs_bulletin))
+docs = scrape_article(sites)
+page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
+page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
+docs.extend(scrape_recursive(page1, 9))
+docs.extend(scrape_recursive(page2, 9))
+save_documents_json(docs, SCRAPED_DATA)
+print("Number of pages:", len(docs))
