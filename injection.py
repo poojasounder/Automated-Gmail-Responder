@@ -9,6 +9,7 @@ import shutil
 import requests
 from pyhtml2pdf import converter
 
+
 def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
     start_page = None
     end_page = None
@@ -113,6 +114,7 @@ if __name__ == "__main__":
     convert_to_pdf('./Upload_documents/urls.txt')
     docs = load_pdf_documents("load_documents") # Load all documents in the directory(success)
     chunks = chunking(docs) # Split documents into chunks(success)
+    print(chunks)
     vectorstore.add_documents(chunks) # Added vectorstore (success)
     #splits = chunking(docs_from_urls) # Split documents into chunks(success)
     #vectorstore.add_documents(documents=splits) # Added vectorstore (success)
