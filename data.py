@@ -76,6 +76,7 @@ def scrape_recursive(url, depth):
     loader = RecursiveUrlLoader(
         url=url,
         max_depth=depth,
+        timeout=20,
         use_async=True,
         prevent_outside=True,
         check_response_status=True,
@@ -91,7 +92,7 @@ sites = "urls.txt"
 docs = scrape_article(sites)
 page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
 page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
-docs.extend(scrape_recursive(page1, 9))
-docs.extend(scrape_recursive(page2, 9))
+docs.extend(scrape_recursive(page1, 12))
+docs.extend(scrape_recursive(page2, 12))
 save_documents_json(docs, SCRAPED_DATA)
 print("Number of pages:", len(docs))
