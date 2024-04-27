@@ -1,11 +1,10 @@
+from urllib.parse import urljoin
 from langchain_community.document_loaders import PyPDFDirectoryLoader, AsyncChromiumLoader
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
 import PyPDF2
 import os, re, json
-import shutil
 import requests
 from pyhtml2pdf import converter
 from bs4 import BeautifulSoup
@@ -60,8 +59,6 @@ def scrape(filename):
 
     return docs_tr
 
-
-
 # combine what's in the data.py on branch data to clean up the docs and chunking process.
 def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
     start_page = None
@@ -91,39 +88,6 @@ def extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page
 
         pdf_writer.write(output_file)
 
-# def convert_to_pdf(file):
-
-#     output_directory = "load_documents"
-#     os.makedirs(output_directory, exist_ok=True)
-#     # Read URLs from file
-#     with open(file, "r") as file:
-#         urls = file.readlines()
-#     index = 1
-#     # Process each URL
-#     for url in urls:
-        
-#         url = url.strip()  # Remove leading/trailing whitespaces
-#         if url:  # Skip empty lines
-#             if url.lower().endswith(".pdf"):
-#                 # Extract filename from URL
-#                 filename = os.path.basename(url)
-#                 # Download the PDF file from the URL
-#                 response = requests.get(url)
-#                 if response.status_code == 200:
-#                     # Save the PDF file to a temporary location
-#                     temp_file_path = os.path.join(output_directory, filename)
-#                     with open(temp_file_path, 'wb') as f:
-#                         f.write(response.content)
-#                     # Move the temporary file to the destination directory
-#                     shutil.move(temp_file_path, os.path.join(output_directory, filename))
-#                     print(f"PDF file downloaded and uploaded successfully: {filename}")
-#                 else:
-#                     print(f"Failed to download PDF file from URL: {url}")
-#             else:
-#                 converter.convert(url, f"./load_documents/doc-{index}.pdf")
-#                 index = index + 1
-#     return None
-
 def load_pdf_documents(dir):
     loader = PyPDFDirectoryLoader(dir)
     docs = loader.load()
@@ -138,6 +102,18 @@ if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
     
+    # Gets all the relevent URL's from the CS department and adds it to url.txt file
+    response = requests.get("https://www.pdx.edu/computer-science/")
+    data = response.text
+    soup = BeautifulSoup(data, 'html.parser')
+    # Open a file in write mode
+    with open("./Upload_documents/urls.txt", "w") as file:
+        for link in soup.find_all('a'):
+            href = link.get('href')
+            if href and 'computer-science' in href:
+                full_url = urljoin("https://www.pdx.edu/computer-science/", href)
+                file.write(full_url + "\n")
+                
     # Initialize vectorstore
     vectorstore = Chroma(
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large", dimensions=768),
