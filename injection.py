@@ -1,11 +1,9 @@
 from langchain_community.document_loaders import PyPDFDirectoryLoader, AsyncChromiumLoader
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-#from langchain_mistral import Mistral7BEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
 import PyPDF2
-#import PyMuPDF
 import os, re, json
 import shutil
 import requests
@@ -13,6 +11,7 @@ from pyhtml2pdf import converter
 from bs4 import BeautifulSoup
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
+from langchain_openai import OpenAIEmbeddings
 
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     
     # Initialize vectorstore
     vectorstore = Chroma(
-    embedding_function=GoogleGenerativeAIEmbeddings(model="models/embedding-001", task_type="retrieval_query"),
+    embedding_function=OpenAIEmbeddings(model="text-embedding-3-large", dimensions=768),
     persist_directory="./.chromadb"
     )
     

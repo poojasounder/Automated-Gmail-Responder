@@ -7,21 +7,32 @@
 run:
 `pip install -r requirements.txt`
 `pip install pyhtml2pdf`
-`pip install langchain_google_genai`
 `pip install chromadb` 
 `pip install pypdf`
 `pip install playwright`
-
+`pip install openai`
+`pip install langchain-openai`
 How to run the project:
+first run `python injection.py` this will overwrite any existing scraped and chunked  data
+then run `python llm.py`
 
-Current problems/questions for next meeting:
-What is drupal?
-We believe the chunking is well taken care of. So we do not think the chunking is the issue here
-Sometimes LLM does not respond... or doesn't respond correctly to specific quesitons. 
+Tasks:
 
-Solution: We are going to have to ditch Gemini pro and use a different
-LLM
+WUCHANG/ELLA:
+- Ask wuchang about publishing the chrom extension: it seems like it take 24hrs to get approved for 
+the chrom extension. OR should he show ella how to upload it from her own local computer.
+- gpt 3.5-turbo works much better but gpt4 will work much better.
+- Ben is working on getting the prompt setup in the front end so that Ella can change the prompt to train the ai.
+    - meet with ella to discuss which prompt display she prefers
 
-For this question: 
-What are the required courses to graduate from the masters of science in computer science program in general?
-The LLM does not respond correctly :frowning:
+EDGECASES:
+- is it possible to have an option on the extension to add more documents in case the school upgrades their
+documents?
+
+TEAM:
+- organize readme file to guide Ella and her team, and wuchang to use without us successfully.
+- update the code to get all the urls (Pooja just needs to push up her branch)
+- figure out the docker file to deploy on cloudrun and then update the url to the frontend
+- Add comments thoughout the codebase and clean up the codebase.
+- Update the requirements.txt file 
+
