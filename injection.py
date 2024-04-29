@@ -1,156 +1,132 @@
-from langchain_community.document_loaders import (
-    PyPDFDirectoryLoader,
-    AsyncChromiumLoader,
-)
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from urllib.parse import urljoin
+from langchain_community.document_loaders import PyPDFDirectoryLoader, AsyncChromiumLoader
+from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
-import PyPDF2
-import json, re
+import re, json
+import requests
+from bs4 import BeautifulSoup
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
-
+from langchain_openai import OpenAIEmbeddings
 
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
-    with open(filename, "w+") as f:
+    with open(filename, 'w+') as f:
         json.dump(data, f)
-
-
+        
 def load_documents_json(filename):
     """Reads a JSON file and returns a list of Documents"""
-    with open(filename, "r") as f:
+    with open(filename, 'r') as f:
         data: list = json.load(f)
     return [Document(**doc_dict) for doc_dict in data]
 
-
 def clean_text(text):
     """Extracts alphanumeric characters and cleans extra whitespace"""
-    text = re.sub(r"\s+", " ", text).strip()
+    # Remove apostraphes
+    #text = re.sub(r"['’]", "", text)
+    # Replace special characters with spaces
+    #text = re.sub(r'[^\w\s]', ' ', text)
+    # Remove extra whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
 
     return text
-
 
 def clean_documents(documents):
     """Cleans page_content text of Documents list"""
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
 
-
 def scrape(filename):
     """Scrapes URLs in given file and returns Documents"""
     # Creates list of URLs
-    with open(filename, "r") as file:
-        sites = [line.rstrip("\n") for line in file]
+    with open(filename, 'r') as file:
+        sites = [line.rstrip('\n') for line in file]
 
     # Scrapes list of sites
     loader = AsyncChromiumLoader(sites)
-    loader.requests_kwargs = {"verify": False}
+    loader.requests_kwargs = {'verify': False}
     docs = loader.load()
     # Extract article tag
     transformer = BeautifulSoupTransformer()
     docs_tr = transformer.transform_documents(
-        documents=docs, tags_to_extract=["article"]
+        documents=docs,
+        tags_to_extract=['article', 'a']
     )
-
+    
     return docs_tr
-
-
-def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
-    start_page = None
-    end_page = None
-
-    with open(input_pdf_path, "rb") as input_file:
-        pdf_reader = PyPDF2.PdfReader(input_file)
-
-        for page_number in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_number]
-            text = page.extract_text()
-
-            if start_keyword in text and start_page is None:
-                start_page = page_number + 1  # Adjust to 1-based indexing
-            elif end_keyword in text:
-                end_page = page_number + 1  # Adjust to 1-based indexing
-                break
-
-    return start_page, end_page
-
-
-def extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page):
-    with open(input_pdf_path, "rb") as input_file, open(
-        output_pdf_path, "wb"
-    ) as output_file:
-        pdf_reader = PyPDF2.PdfReader(input_file)
-        pdf_writer = PyPDF2.PdfWriter()
-
-        for page_number in range(
-            start_page - 1, end_page
-        ):  # Adjust to 0-based indexing
-            pdf_writer.add_page(pdf_reader.pages[page_number])
-
-        pdf_writer.write(output_file)
-
 
 def load_pdf_documents(dir):
     loader = PyPDFDirectoryLoader(dir)
     docs = loader.load()
     return docs
 
-
 def chunking(documents):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=2000)
     chunks = text_splitter.split_documents(documents)
     return chunks
+def extract_text(html):
+    """Used by loader to extract text from div tag with id of main"""
+    soup = BeautifulSoup(html, "html.parser")
+    div_main = soup.find("div", {"id": "main"})
+    if div_main:
+        return div_main.get_text(" ", strip=True)
+    return " ".join(soup.stripped_strings)
 
+def scrape_recursive(url, depth):
+    """Recursively scrapes URL and returns Documents"""
+    loader = RecursiveUrlLoader(
+        url=url,
+        max_depth=depth,
+        timeout=20,
+        use_async=True,
+        prevent_outside=True,
+        check_response_status=True,
+        continue_on_failure=True,
+        extractor=extract_text,
+    )
+    docs = loader.load()
+    clean_documents(docs)
+    return docs
 
 if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
-
+    
+    # Gets all the relevent URL's from the CS department and adds it to url.txt file
+    response = requests.get("https://www.pdx.edu/computer-science/")
+    data = response.text
+    soup = BeautifulSoup(data, 'html.parser')
+    # Open a file in write mode
+    with open("./urls.txt", "w") as file:
+        for link in soup.find_all('a'):
+            href = link.get('href')
+            if href and 'computer-science' in href:
+                full_url = urljoin("https://www.pdx.edu/computer-science/", href)
+                file.write(full_url + "\n")
+                
     # Initialize vectorstore
     vectorstore = Chroma(
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001", task_type="retrieval_query"
-        ),
-        persist_directory="./.chromadb",
+    embedding_function=OpenAIEmbeddings(model="text-embedding-3-large", dimensions=768),
+    persist_directory="./.chromadb"
     )
 
-    # Provide the path to your input PDF file
-    input_pdf_path = "./Upload_documents/Bulletin.pdf"
-    # Find the start and end page numbers
-    start_page, end_page = find_page_numbers(
-        input_pdf_path, "COMPUTER SCIENCE M.S.", "Electrical and Computer Engineering"
-    )
-
-    # Provide the path for the output PDF file
-    output_pdf_path = "./load_documents/bulletin_cs.pdf"
-
-    # Extract and save the specified pages as a new PDF file
-    if start_page is not None and end_page is not None:
-        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-
-    start_page, end_page = find_page_numbers(
-        input_pdf_path, "Portland State University", "UNDERGRADUATE STUDIES"
-    )
-    # Provide the path for the output PDF file
-    output_pdf_path = "./load_documents/Finance.pdf"
-
-    # Extract and save the specified pages as a new PDF file
-    if start_page is not None and end_page is not None:
-        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-
-    file = "./Upload_documents/urls.txt"
+    file = './urls.txt'
     documents = scrape(file)
     clean_documents(documents)
-    save_documents_json(documents, "./scraped_data.json")
-    scraped_data = load_documents_json("./scraped_data.json")
-    splits = chunking(scraped_data)
-    vectorstore.add_documents(splits)
-
-    docs = load_pdf_documents(
-        "load_documents"
-    )  # Load all documents in the directory(success)
-    chunks = chunking(docs)  # Split documents into chunks(success)
-    vectorstore.add_documents(chunks)  # Added vectorstore (success)
+    save_documents_json(documents, './scraped_data.json')
+    
+    docs = load_pdf_documents("FAQ") # Load all documents in the directory(success)
+    chunks = chunking(docs) # Split documents into chunks(success)
+    vectorstore.add_documents(chunks) # Added vectorstore (success)
+    
+    page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
+    page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
+    doc = scrape_recursive(page1, 12)
+    doc.extend(scrape_recursive(page2, 12))
+    save_documents_json(doc, './scraped_data.json')
+    scraped_data = load_documents_json('./scraped_data.json')
+    chunks = chunking(scraped_data)
+    vectorstore.add_documents(chunks)
