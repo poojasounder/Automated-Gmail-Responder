@@ -4,10 +4,8 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
-import PyPDF2
-import os, re, json
+import re, json
 import requests
-from pyhtml2pdf import converter
 from bs4 import BeautifulSoup
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
@@ -59,35 +57,6 @@ def scrape(filename):
     )
     
     return docs_tr
-
-""" # combine what's in the data.py on branch data to clean up the docs and chunking process.
-def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
-    start_page = None
-    end_page = None
-
-    with open(input_pdf_path, "rb") as input_file:
-        pdf_reader = PyPDF2.PdfReader(input_file)
-
-        for page_number in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_number]
-            text = page.extract_text()
-
-            if start_keyword in text and start_page is None:
-                start_page = page_number + 1  # Adjust to 1-based indexing
-            elif end_keyword in text:
-                end_page = page_number + 1  # Adjust to 1-based indexing
-                break
-
-    return start_page, end_page
-def extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page):
-    with open(input_pdf_path, "rb") as input_file, open(output_pdf_path, "wb") as output_file:
-        pdf_reader = PyPDF2.PdfReader(input_file)
-        pdf_writer = PyPDF2.PdfWriter()
-
-        for page_number in range(start_page - 1, end_page):  # Adjust to 0-based indexing
-            pdf_writer.add_page(pdf_reader.pages[page_number])
-
-        pdf_writer.write(output_file) """
 
 def load_pdf_documents(dir):
     loader = PyPDFDirectoryLoader(dir)
@@ -143,27 +112,7 @@ if __name__ == "__main__":
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large", dimensions=768),
     persist_directory="./.chromadb"
     )
-    
-    """     # Provide the path to your input PDF file
-    input_pdf_path = "./Upload_documents/Bulletin.pdf"
-    # Find the start and end page numbers
-    start_page, end_page = find_page_numbers(input_pdf_path, "COMPUTER SCIENCE M.S.", "Electrical and Computer Engineering")
 
-    # Provide the path for the output PDF file
-    output_pdf_path = "./load_documents/bulletin_cs.pdf"
-
-    # Extract and save the specified pages as a new PDF file
-    if start_page is not None and end_page is not None:
-        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-        
-    start_page, end_page = find_page_numbers(input_pdf_path,"Portland State University", "UNDERGRADUATE STUDIES")
-    # Provide the path for the output PDF file
-    output_pdf_path = "./load_documents/Finance.pdf"
-
-    # Extract and save the specified pages as a new PDF file
-    if start_page is not None and end_page is not None:
-        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-    """
     file = './urls.txt'
     documents = scrape(file)
     clean_documents(documents)
