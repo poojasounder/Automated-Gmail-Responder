@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
-import os
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
@@ -115,12 +114,7 @@ if __name__ == "__main__":
                 full_url = urljoin("https://www.pdx.edu/computer-science/", href)
                 file.write(full_url + "\n")
                 
-    # Initialize vectorstore
-    """ vectorstore = Chroma(
-    embedding_function=OpenAIEmbeddings(model="text-embedding-3-large", dimensions=768),
-    persist_directory="./.chromadb"
-    )
-"""
+
     file = './urls.txt'
     documents = scrape(file)
     clean_documents(documents)
