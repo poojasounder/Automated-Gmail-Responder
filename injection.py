@@ -1,120 +1,103 @@
-from langchain_community.document_loaders import PyPDFDirectoryLoader,AsyncHtmlLoader
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAI, OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import PDFMinerPDFasHTMLLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
-import PyPDF2
-import os
-import shutil
-import requests
-from pyhtml2pdf import converter
+from bs4 import BeautifulSoup
 
+loader = PDFMinerPDFasHTMLLoader("./Upload_documents/Frequently Asked Questions (FAQ) - CS Graduate Admissions.pdf")
+documents = loader.load()[0]
+soup = BeautifulSoup(documents.page_content,'html.parser')
+content = soup.find_all('div')
+import re
+cur_fs = None
+cur_text = ''
+snippets = []   # first collect all snippets that have the same font size
+for c in content:
+    sp = c.find('span')
+    if not sp:
+        continue
+    st = sp.get('style')
+    if not st:
+        continue
+    fs = re.findall('font-size:(\d+)px',st)
+    if not fs:
+        continue
+    fs = int(fs[0])
+    if not cur_fs:
+        cur_fs = fs
+    if fs == cur_fs:
+        cur_text += c.text
+    else:
+        snippets.append((cur_text,cur_fs))
+        cur_fs = fs
+        cur_text = c.text
+snippets.append((cur_text,cur_fs))
+# Note: The above logic is very straightforward. One can also add more strategies such as removing duplicate snippets (as
+# headers/footers in a PDF appear on multiple pages so if we find duplicates it's safe to assume that it is redundant info)
+from langchain_community.docstore.document import Document
+cur_idx = -1
+semantic_snippets = []
+# Assumption: headings have higher font size than their respective content
+for s in snippets:
+    # if current snippet's font size > previous section's heading => it is a new heading
+    if not semantic_snippets or s[1] > semantic_snippets[cur_idx].metadata['heading_font']:
+        metadata={'heading':s[0], 'content_font': 0, 'heading_font': s[1]}
+        metadata.update(documents.metadata)
+        semantic_snippets.append(Document(page_content='',metadata=metadata))
+        cur_idx += 1
+        continue
 
-def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
-    start_page = None
-    end_page = None
+    # if current snippet's font size <= previous section's content => content belongs to the same section (one can also create
+    # a tree like structure for sub sections if needed but that may require some more thinking and may be data specific)
+    if not semantic_snippets[cur_idx].metadata['content_font'] or s[1] <= semantic_snippets[cur_idx].metadata['content_font']:
+        semantic_snippets[cur_idx].page_content += s[0]
+        semantic_snippets[cur_idx].metadata['content_font'] = max(s[1], semantic_snippets[cur_idx].metadata['content_font'])
+        continue
 
-    with open(input_pdf_path, "rb") as input_file:
-        pdf_reader = PyPDF2.PdfReader(input_file)
+    # if current snippet's font size > previous section's content but less than previous section's heading than also make a new
+    # section (e.g. title of a PDF will have the highest font size but we don't want it to subsume all sections)
+    metadata={'heading':s[0], 'content_font': 0, 'heading_font': s[1]}
+    metadata.update(documents.metadata)
+    semantic_snippets.append(Document(page_content='',metadata=metadata))
+    cur_idx += 1
+# Split the text into individual lines
+lines = semantic_snippets[0].page_content.strip().split('\n')
+# Initialize variables to store questions and answers
+questions = []
+answers = []
+current_chunk = ""
 
-        for page_number in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_number]
-            text = page.extract_text()
-
-            if start_keyword in text and start_page is None:
-                start_page = page_number + 1  # Adjust to 1-based indexing
-            elif end_keyword in text:
-                end_page = page_number + 1  # Adjust to 1-based indexing
-                break
-
-    return start_page, end_page
-def extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page):
-    with open(input_pdf_path, "rb") as input_file, open(output_pdf_path, "wb") as output_file:
-        pdf_reader = PyPDF2.PdfReader(input_file)
-        pdf_writer = PyPDF2.PdfWriter()
-
-        for page_number in range(start_page - 1, end_page):  # Adjust to 0-based indexing
-            pdf_writer.add_page(pdf_reader.pages[page_number])
-
-        pdf_writer.write(output_file)
-
-def convert_to_pdf(file):
-
-    output_directory = "load_documents"
-    os.makedirs(output_directory, exist_ok=True)
-    # Read URLs from file
-    with open(file, "r") as file:
-        urls = file.readlines()
-    index = 1
-    # Process each URL
-    for url in urls:
-        
-        url = url.strip()  # Remove leading/trailing whitespaces
-        if url:  # Skip empty lines
-            if url.lower().endswith(".pdf"):
-                # Extract filename from URL
-                filename = os.path.basename(url)
-                # Download the PDF file from the URL
-                response = requests.get(url)
-                if response.status_code == 200:
-                    # Save the PDF file to a temporary location
-                    temp_file_path = os.path.join(output_directory, filename)
-                    with open(temp_file_path, 'wb') as f:
-                        f.write(response.content)
-                    # Move the temporary file to the destination directory
-                    shutil.move(temp_file_path, os.path.join(output_directory, filename))
-                    print(f"PDF file downloaded and uploaded successfully: {filename}")
-                else:
-                    print(f"Failed to download PDF file from URL: {url}")
+# Loop through each line in the text
+for line in lines:
+    # Check if the line is empty or contains only whitespace
+    if line.strip() == "":
+        # If the current chunk is not empty, add it to either questions or answers
+        if current_chunk:
+            if "?" in current_chunk:
+                questions.append(current_chunk.strip())
             else:
-                converter.convert(url, f"./load_documents/doc-{index}.pdf")
-                index = index + 1
-    return None
+                answers.append(current_chunk.strip())
+        current_chunk = ""  # Reset the current chunk
+    else:
+        # Concatenate the current line to the current chunk
+        current_chunk += " " + line.strip()
+        print(current_chunk)
 
-def load_pdf_documents(dir):
-    loader = PyPDFDirectoryLoader(dir)
-    docs = loader.load()
-    return docs
+# If there is remaining content in the current chunk, add it to either questions or answers
+if current_chunk:
+    if "?" in current_chunk:
+        questions.append(current_chunk.strip())
+    else:
+        answers.append(current_chunk.strip())
 
-def chunking(documents):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
-    chunks = text_splitter.split_documents(documents)
-    return chunks
+# Combine questions and answers into chunks
+chunks = [(q, a) for q, a in zip(questions, answers)]
 
-if __name__ == "__main__":
-    # loading environment variables
-    load_dotenv()
-    
-    # Initialize vectorstore
-    vectorstore = Chroma(
-    embedding_function=GoogleGenerativeAIEmbeddings(model="models/embedding-001", task_type="retrieval_query"),
-    persist_directory="./.chromadb"
-    )
-    
-    # Provide the path to your input PDF file
-    input_pdf_path = "./Upload_documents/Bulletin.pdf"
-    # Find the start and end page numbers
-    start_page, end_page = find_page_numbers(input_pdf_path, "COMPUTER SCIENCE M.S.", "Electrical and Computer Engineering")
+# Print the chunks
+for idx, chunk in enumerate(chunks, start=1):
+    print(f"Chunk {idx}:")
+    print("Question:", chunk[0])
+    print("Answer:", chunk[1])
+    print("\n")
 
-    # Provide the path for the output PDF file
-    output_pdf_path = "./load_documents/bulletin_cs.pdf"
-
-    # Extract and save the specified pages as a new PDF file
-    if start_page is not None and end_page is not None:
-        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-        
-    start_page, end_page = find_page_numbers(input_pdf_path,"Portland State University", "UNDERGRADUATE STUDIES")
-    # Provide the path for the output PDF file
-    output_pdf_path = "./load_documents/Finance.pdf"
-
-    # Extract and save the specified pages as a new PDF file
-    if start_page is not None and end_page is not None:
-        extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-    
-    convert_to_pdf('./Upload_documents/urls.txt')
-    docs = load_pdf_documents("load_documents") # Load all documents in the directory(success)
-    chunks = chunking(docs) # Split documents into chunks(success)
-    print(chunks)
-    vectorstore.add_documents(chunks) # Added vectorstore (success)
-    #splits = chunking(docs_from_urls) # Split documents into chunks(success)
-    #vectorstore.add_documents(documents=splits) # Added vectorstore (success)
