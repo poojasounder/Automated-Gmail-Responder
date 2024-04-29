@@ -6,8 +6,6 @@
   const composeLocation = '.Am.aiL.aO9.Al.editable.LW-avf.tS-tW'; //Compose email container
   const imageURL = chrome.runtime.getURL('/logo.png');
 
-  
-
   //Checks for necessary elements to load
   const elementObserver = new MutationObserver(function (
     mutations,
