@@ -59,7 +59,7 @@ def scrape(filename):
 
     return docs_tr
 
-# combine what's in the data.py on branch data to clean up the docs and chunking process.
+""" # combine what's in the data.py on branch data to clean up the docs and chunking process.
 def find_page_numbers(input_pdf_path, start_keyword, end_keyword):
     start_page = None
     end_page = None
@@ -86,7 +86,7 @@ def extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page
         for page_number in range(start_page - 1, end_page):  # Adjust to 0-based indexing
             pdf_writer.add_page(pdf_reader.pages[page_number])
 
-        pdf_writer.write(output_file)
+        pdf_writer.write(output_file) """
 
 def load_pdf_documents(dir):
     loader = PyPDFDirectoryLoader(dir)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     data = response.text
     soup = BeautifulSoup(data, 'html.parser')
     # Open a file in write mode
-    with open("./Upload_documents/urls.txt", "w") as file:
+    with open("./urls.txt", "w") as file:
         for link in soup.find_all('a'):
             href = link.get('href')
             if href and 'computer-science' in href:
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     persist_directory="./.chromadb"
     )
     
-    # Provide the path to your input PDF file
+    """     # Provide the path to your input PDF file
     input_pdf_path = "./Upload_documents/Bulletin.pdf"
     # Find the start and end page numbers
     start_page, end_page = find_page_numbers(input_pdf_path, "COMPUTER SCIENCE M.S.", "Electrical and Computer Engineering")
@@ -139,8 +139,8 @@ if __name__ == "__main__":
     # Extract and save the specified pages as a new PDF file
     if start_page is not None and end_page is not None:
         extract_and_save_pages(input_pdf_path, output_pdf_path, start_page, end_page)
-        
-    file = './Upload_documents/urls.txt'
+    """
+    file = './urls.txt'
     documents = scrape(file)
     clean_documents(documents)
     save_documents_json(documents, './scraped_data.json')
@@ -149,8 +149,9 @@ if __name__ == "__main__":
     vectorstore.add_documents(chunks)
     
     #convert_to_pdf('./Upload_documents/urls.txt')
-    docs = load_pdf_documents("load_documents") # Load all documents in the directory(success)
+    docs = load_pdf_documents("FAQ") # Load all documents in the directory(success)
     chunks = chunking(docs) # Split documents into chunks(success)
     vectorstore.add_documents(chunks) # Added vectorstore (success)
     #splits = chunking(docs_from_urls) # Split documents into chunks(success)
     #vectorstore.add_documents(documents=splits) # Added vectorstore (success)
+    

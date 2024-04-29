@@ -30,11 +30,12 @@ if __name__ == "__main__":
     retriever = vectorstore.as_retriever()
     email = "Hi, What are the courses required to graduate from the  CS masters program?"
     #my name is Julie Nguyen and I am interested in the Graduate program. I wanted to know what the requirements are to be admitted into the program. I have a 2.9 GPA and 1 year experience from my internship at Intel. I want to learn more about Computer Science and thrive with my future career in game development. Thank you! Best regards, Julie Nguyen"
-    docs = vectorstore.similarity_search(email,k=1) # Get relevant documents based on the query(success)
+    docs = vectorstore.similarity_search(email,k=3) # Get relevant documents based on the query(success)
+    print(docs)
     rag_prompt = '''
     Your role: You are a CS Graduate Advisor at Portland State University
     Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs and keep the email response as short as possible
-    Task: Write an email response to the following email from a student with answers to their questions given the following context.
+    Task: Write an email response to the following email from a student with answers to their questions given the following contex with appropriate links if possible
     
     Email: {email}
     Context: {context}
