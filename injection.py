@@ -67,6 +67,7 @@ def chunking(documents):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=2000)
     chunks = text_splitter.split_documents(documents)
     return chunks
+
 def extract_text(html):
     """Used by loader to extract text from div tag with id of main"""
     soup = BeautifulSoup(html, "html.parser")
@@ -90,7 +91,14 @@ def scrape_recursive(url, depth):
     docs = loader.load()
     clean_documents(docs)
     return docs
-
+# create embeddings using OpenAIEmbeddings() and save them in a Chroma vector store 
+def create_embeddings(chunks): 
+	embeddings = OpenAIEmbeddings() 
+	#vector_store = Chroma.from_documents(chunks, embeddings) 
+ 
+	# if you want to use a specific directory for chromadb 
+	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./chroma_db') 
+	return vector_store
 if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
@@ -108,11 +116,11 @@ if __name__ == "__main__":
                 file.write(full_url + "\n")
                 
     # Initialize vectorstore
-    vectorstore = Chroma(
+    """ vectorstore = Chroma(
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large", dimensions=768),
     persist_directory="./.chromadb"
     )
-
+"""
     file = './urls.txt'
     documents = scrape(file)
     clean_documents(documents)
@@ -120,7 +128,7 @@ if __name__ == "__main__":
     
     docs = load_pdf_documents("FAQ") # Load all documents in the directory(success)
     chunks = chunking(docs) # Split documents into chunks(success)
-    vectorstore.add_documents(chunks) # Added vectorstore (success)
+    create_embeddings(chunks) # Added vectorstore (success)
     
     page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
     page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
@@ -129,5 +137,5 @@ if __name__ == "__main__":
     save_documents_json(doc, './scraped_data.json')
     scraped_data = load_documents_json('./scraped_data.json')
     chunks = chunking(scraped_data)
-    vectorstore.add_documents(chunks)
+    create_embeddings(chunks)
     
