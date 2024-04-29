@@ -1,5 +1,6 @@
 from urllib.parse import urljoin
 from langchain_community.document_loaders import PyPDFDirectoryLoader, AsyncChromiumLoader
+from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
@@ -54,9 +55,9 @@ def scrape(filename):
     transformer = BeautifulSoupTransformer()
     docs_tr = transformer.transform_documents(
         documents=docs,
-        tags_to_extract=['article']
+        tags_to_extract=['article', 'a']
     )
-
+    
     return docs_tr
 
 """ # combine what's in the data.py on branch data to clean up the docs and chunking process.
@@ -97,6 +98,29 @@ def chunking(documents):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=2000)
     chunks = text_splitter.split_documents(documents)
     return chunks
+def extract_text(html):
+    """Used by loader to extract text from div tag with id of main"""
+    soup = BeautifulSoup(html, "html.parser")
+    div_main = soup.find("div", {"id": "main"})
+    if div_main:
+        return div_main.get_text(" ", strip=True)
+    return " ".join(soup.stripped_strings)
+
+def scrape_recursive(url, depth):
+    """Recursively scrapes URL and returns Documents"""
+    loader = RecursiveUrlLoader(
+        url=url,
+        max_depth=depth,
+        timeout=20,
+        use_async=True,
+        prevent_outside=True,
+        check_response_status=True,
+        continue_on_failure=True,
+        extractor=extract_text,
+    )
+    docs = loader.load()
+    clean_documents(docs)
+    return docs
 
 if __name__ == "__main__":
     # loading environment variables
@@ -144,14 +168,17 @@ if __name__ == "__main__":
     documents = scrape(file)
     clean_documents(documents)
     save_documents_json(documents, './scraped_data.json')
-    scraped_data = load_documents_json('./scraped_data.json')
-    chunks = chunking(scraped_data)
-    vectorstore.add_documents(chunks)
     
-    #convert_to_pdf('./Upload_documents/urls.txt')
     docs = load_pdf_documents("FAQ") # Load all documents in the directory(success)
     chunks = chunking(docs) # Split documents into chunks(success)
     vectorstore.add_documents(chunks) # Added vectorstore (success)
-    #splits = chunking(docs_from_urls) # Split documents into chunks(success)
-    #vectorstore.add_documents(documents=splits) # Added vectorstore (success)
+    
+    page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
+    page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
+    doc = scrape_recursive(page1, 12)
+    doc.extend(scrape_recursive(page2, 12))
+    save_documents_json(doc, './scraped_data.json')
+    scraped_data = load_documents_json('./scraped_data.json')
+    chunks = chunking(scraped_data)
+    vectorstore.add_documents(chunks)
     
