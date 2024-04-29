@@ -1,5 +1,4 @@
 import re
-import os
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
