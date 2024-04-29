@@ -6,6 +6,8 @@
   const composeLocation = '.Am.aiL.aO9.Al.editable.LW-avf.tS-tW'; //Compose email container
   const imageURL = chrome.runtime.getURL('/logo.png');
 
+  
+
   //Checks for necessary elements to load
   const elementObserver = new MutationObserver(function (
     mutations,
@@ -64,7 +66,10 @@
     document
       .getElementById('capstone-button')
       .addEventListener('click', function (event) {
-        document.querySelector(composeLocation).textContent = 'Processing...';
+        chrome.storage.local.get('savedText', function (data) {
+          savedText = data.savedText;
+          console.log('Script Saved Prompt:', savedText);
+        });
         injectBody();
       });
   }
@@ -96,7 +101,7 @@
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
           stopLoadingDots();
-          typeOutResponse(dta.response);
+          typeOutResponse(dta.response + savedText);
         }
       })
       .catch((error) => alert(error));
@@ -106,14 +111,14 @@
     const composeContainer = document.querySelector(composeLocation);
     if (!response) {
       console.log('No response from API');
-      //injectBody(); infinite loop?
+      injectBody(); //infinite loop?
       return;
     }
     let index = 0;
     let parser = '';
     const interval = setInterval(function () {
       parser += response[index++];
-      composeContainer.innerHTML = parser.replace(/<\/?div>/g, ' ').trim();
+      composeContainer.innerHTML = parser;
       if (index === response.length) {
         clearInterval(interval);
       }

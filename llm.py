@@ -89,5 +89,5 @@ def aerllm(q:Union[str,None] = None):
         | StrOutputParser()
     )
     result = rag_chain.invoke(email)
-    result = re.sub(r"\n", "<div><br></div>", result)
+    result = re.sub(r"\n", "<br>", result)
     return {"response": result}
