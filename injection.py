@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
-
+import os
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
@@ -93,9 +93,9 @@ def scrape_recursive(url, depth):
     return docs
 # create embeddings using OpenAIEmbeddings() and save them in a Chroma vector store 
 def create_embeddings(chunks): 
-	embeddings = OpenAIEmbeddings() 
+	embeddings = OpenAIEmbeddings()
 	#vector_store = Chroma.from_documents(chunks, embeddings) 
- 
+
 	# if you want to use a specific directory for chromadb 
 	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./chroma_db') 
 	return vector_store
@@ -127,8 +127,8 @@ if __name__ == "__main__":
     save_documents_json(documents, './scraped_data.json')
     
     docs = load_pdf_documents("FAQ") # Load all documents in the directory(success)
-    chunks = chunking(docs) # Split documents into chunks(success)
-    create_embeddings(chunks) # Added vectorstore (success)
+    chunks = chunking(docs) # Split documents into chunks
+    create_embeddings(chunks) # Create embeddings and save them in a vector store
     
     page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
     page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
@@ -138,4 +138,3 @@ if __name__ == "__main__":
     scraped_data = load_documents_json('./scraped_data.json')
     chunks = chunking(scraped_data)
     create_embeddings(chunks)
-    
