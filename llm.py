@@ -54,13 +54,12 @@ def aerllm(q: Union[str, None] = None):
     )
     #initialized the llm model
     llm = ChatOpenAI(model='gpt-3.5-turbo',temperature=0)
-    # to use the vectorstore
-    retriever = vectorstore.as_retriever()
+    
     if q is not None:
         email = q
     else:
         raise ValueError("No valid question given")
-    docs = vectorstore.similarity_search(email,k=2)
+    docs = vectorstore.similarity_search(email)
     rag_prompt = '''
     Your role: You are a CS Graduate Advisor at Portland State University
     Task: Write an email response to the following email from a student with answers to their questions given the following context.
