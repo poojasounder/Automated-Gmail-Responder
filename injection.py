@@ -48,11 +48,21 @@ def scrape(filename):
     loader = AsyncChromiumLoader(sites)
     loader.requests_kwargs = {'verify': False}
     docs = loader.load()
+    # Filter out anchor tags that do not start with 'https'
+    for doc in docs:
+        soup = BeautifulSoup(doc.page_content, 'html.parser')
+        for link in soup.find_all('a', href=True):
+            href = link.get('href')
+            if not href.startswith("https"):
+                link.decompose()  # Remove the anchor tag if href does not start with 'https'
+
+        # Update the content of the document
+        doc.page_content = str(soup)
     # Extract article tag
     transformer = BeautifulSoupTransformer()
     docs_tr = transformer.transform_documents(
         documents=docs,
-        tags_to_extract=['article', 'a']
+        tags_to_extract=['article']
     )
     
     return docs_tr
@@ -93,10 +103,9 @@ def scrape_recursive(url, depth):
 # create embeddings using OpenAIEmbeddings() and save them in a Chroma vector store 
 def create_embeddings(chunks): 
 	embeddings = OpenAIEmbeddings()
-	#vector_store = Chroma.from_documents(chunks, embeddings) 
 
 	# if you want to use a specific directory for chromadb 
-	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./chroma_db') 
+	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./.chromadb') 
 	return vector_store
 if __name__ == "__main__":
     # loading environment variables
