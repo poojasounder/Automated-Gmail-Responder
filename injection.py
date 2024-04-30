@@ -48,11 +48,21 @@ def scrape(filename):
     loader = AsyncChromiumLoader(sites)
     loader.requests_kwargs = {'verify': False}
     docs = loader.load()
+    # Filter out anchor tags that do not start with 'https'
+    for doc in docs:
+        soup = BeautifulSoup(doc.page_content, 'html.parser')
+        for link in soup.find_all('a', href=True):
+            href = link.get('href')
+            if not href.startswith("https"):
+                link.decompose()  # Remove the anchor tag if href does not start with 'https'
+
+        # Update the content of the document
+        doc.page_content = str(soup)
     # Extract article tag
     transformer = BeautifulSoupTransformer()
     docs_tr = transformer.transform_documents(
         documents=docs,
-        tags_to_extract=['article', 'a']
+        tags_to_extract=['article']
     )
     
     return docs_tr
