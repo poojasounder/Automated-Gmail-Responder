@@ -37,11 +37,7 @@ BACKEND TEAM:
     possibly upload updated documents.
     - upload a video on how it works.
 - ensure the injection.py and llm.py is working well.
-- add what's in ana_chroma branch to the main. DO NOT MERGE. Just add the necessary code.
-- get code from data branch to update the scraping of the bulletin 
-- update the code to get all the urls (Pooja just needs to push up her branch)
 - [PRIORITY] Figure out the docker file to deploy on cloudrun and then update the url to the frontend
-- Use pdf directory loader to load the pdf documents
 - Add comments thoughout the codebase and clean up the codebase. Get rid of whitespace. Make
 sure everything is formatted well and follows good coding conventions
 - Update the requirements.txt file 
