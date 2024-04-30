@@ -40,5 +40,5 @@ BACKEND TEAM:
 - [PRIORITY] Figure out the docker file to deploy on cloudrun and then update the url to the frontend
 - Add comments thoughout the codebase and clean up the codebase. Get rid of whitespace. Make
 sure everything is formatted well and follows good coding conventions
-- Update the requirements.txt file 
+- Update the requirements.txt file
 
