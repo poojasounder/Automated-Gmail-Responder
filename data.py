@@ -18,17 +18,23 @@ def files(path: str):
             yield file
 
 
+def list_from_file(filename: str) -> list[str]:
+    with open(filename, "r") as file:
+        lines = [line.rstrip("\n") for line in file]
+    return lines
+
+
 def save_documents_json(documents: list[Document], filename: str):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
-    with open(filename, "w+") as f:
-        json.dump(data, f)
+    with open(filename, "w+") as file:
+        json.dump(data, file)
 
 
 def load_documents_json(filename: str) -> list[Document]:
     """Reads a JSON file and returns a list of Documents"""
-    with open(filename, "r") as f:
-        data: list = json.load(f)
+    with open(filename, "r") as file:
+        data: list = json.load(file)
     return [Document(**doc_dict) for doc_dict in data]
 
 
@@ -65,9 +71,7 @@ def scrape_article(filename: str) -> list[Document]:
     Returns:
         The contents of the web pages as Documents
     """
-    # Creates list of URLs
-    with open(filename, "r") as file:
-        sites = [line.rstrip("\n") for line in file]
+    sites = list_from_file(filename)
     # Scrapes list of sites
     loader = AsyncChromiumLoader(sites)
     loader.requests_kwargs = {"verify": False}
@@ -114,14 +118,10 @@ def scrape_recursive(url: str, depth: int = 12) -> list[Document]:
     return docs
 
 
-sites = "urls.txt"
-docs = scrape_article(sites)
-page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
-page2 = (
-    "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
-)
-
-docs.extend(scrape_recursive(page1))
-docs.extend(scrape_recursive(page2))
+pdx_sites = "urls.txt"
+docs = scrape_article(pdx_sites)
+bulletin_sites = list_from_file("bulletin_urls.txt")
+for site in bulletin_sites:
+    docs.extend(scrape_recursive(site))
 save_documents_json(docs, SCRAPED_DATA)
 print("Number of pages:", len(docs))
