@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
+
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
@@ -100,16 +101,15 @@ def scrape_recursive(url, depth):
     docs = loader.load()
     clean_documents(docs)
     return docs
-# create embeddings using OpenAIEmbeddings() and save them in a Chroma vector store 
-def create_embeddings(chunks): 
-	embeddings = OpenAIEmbeddings()
-
-	# if you want to use a specific directory for chromadb 
-	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./.chromadb') 
-	return vector_store
 if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
+    
+    # Initialize vectorstore
+    vectorstore = Chroma(
+    embedding_function=OpenAIEmbeddings(),
+    persist_directory="./.chromadb"
+    )
     
     # Gets all the relevent URL's from the CS department and adds it to url.txt file
     response = requests.get("https://www.pdx.edu/computer-science/")
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     
     docs = load_pdf_documents("FAQ") # Load all documents in the directory(success)
     chunks = chunking(docs) # Split documents into chunks
-    create_embeddings(chunks) # Create embeddings and save them in a vector store
+    vectorstore.add_documents(chunks) # Create embeddings and save them in a vector store
     
     page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
     page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
@@ -140,4 +140,4 @@ if __name__ == "__main__":
     save_documents_json(doc, './scraped_data.json')
     scraped_data = load_documents_json('./scraped_data.json')
     chunks = chunking(scraped_data)
-    create_embeddings(chunks)
+    vectorstore.add_documents(chunks)
