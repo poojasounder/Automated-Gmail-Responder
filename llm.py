@@ -61,7 +61,6 @@ def aerllm(q: Union[str, None] = None):
         raise ValueError("No valid question given")
     docs = vectorstore.similarity_search(email)
     rag_prompt = '''
-    Your role: You are a CS Graduate Advisor at Portland State University
     Task: Write an email response to the following email from a student with answers to their questions given the following context.
     
     Email: {email}
