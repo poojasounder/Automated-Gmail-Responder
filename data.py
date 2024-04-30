@@ -1,4 +1,7 @@
-import json, os, re, unidecode
+import json
+import os
+import re
+import unidecode
 from bs4 import BeautifulSoup
 from langchain_community.document_loaders import AsyncChromiumLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
@@ -7,48 +10,64 @@ from langchain.schema import Document
 
 SCRAPED_DATA = "documents/scraped_data.json"
 
-def files(path):
+
+def files(path: str):
     """Returns filenames in given path"""
     for file in os.listdir(path):
         if os.path.isfile(os.path.join(path, file)):
             yield file
 
 
-def save_documents_json(documents, filename):
+def save_documents_json(documents: list[Document], filename: str):
     """Saves list of Documents as JSON file"""
     data = [doc.dict() for doc in documents]
     with open(filename, "w+") as f:
         json.dump(data, f)
 
 
-def load_documents_json(filename):
+def load_documents_json(filename: str) -> list[Document]:
     """Reads a JSON file and returns a list of Documents"""
     with open(filename, "r") as f:
         data: list = json.load(f)
     return [Document(**doc_dict) for doc_dict in data]
 
 
-def clean_text(text):
-    """Extracts alphanumeric characters and cleans extra whitespace"""
-    # Convert Unicode to ASCII
+def clean_text(text: str) -> str:
+    """Converts unicode characters and removes extra whitespace
+
+    Args:
+        text : The string to be cleaned
+
+    Returns:
+        The cleaned string
+    """
     text = unidecode.unidecode(text)
-    # Remove extra whitespace
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
 
-def clean_documents(documents):
-    """Cleans page_content text of Documents list"""
+def clean_documents(documents: list[Document]):
+    """Runs clean_text on page_content of Documents
+
+    Args:
+        documents: List of Documents to be cleaned
+    """
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
 
 
-def scrape_article(filename):
-    """Scrapes URLs listed in file, extracts article tag, returns Documents"""
+def scrape_article(filename: str) -> list[Document]:
+    """Scrapes URLs listed in file and extracts article tag
+
+    Args:
+        filename: Text file with URLs listed on separate lines
+
+    Returns:
+        The contents of the web pages as Documents
+    """
     # Creates list of URLs
     with open(filename, "r") as file:
         sites = [line.rstrip("\n") for line in file]
-
     # Scrapes list of sites
     loader = AsyncChromiumLoader(sites)
     loader.requests_kwargs = {"verify": False}
@@ -62,8 +81,15 @@ def scrape_article(filename):
     return docs_transformed
 
 
-def extract_text(html):
-    """Used by loader to extract text from div tag with id of main"""
+def extract_text(html: str) -> str:
+    """Function used by loader to extract text from div tag with matching id
+
+    Args:
+        html: Raw html
+
+    Returns:
+        Extracted text as string
+    """
     soup = BeautifulSoup(html, "html.parser")
     div_main = soup.find("div", {"id": "main"})
     if div_main:
@@ -71,7 +97,7 @@ def extract_text(html):
     return " ".join(soup.stripped_strings)
 
 
-def scrape_recursive(url, depth):
+def scrape_recursive(url: str, depth: int = 12) -> list[Document]:
     """Recursively scrapes URL and returns Documents"""
     loader = RecursiveUrlLoader(
         url=url,
@@ -91,8 +117,11 @@ def scrape_recursive(url, depth):
 sites = "urls.txt"
 docs = scrape_article(sites)
 page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
-page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
-docs.extend(scrape_recursive(page1, 12))
-docs.extend(scrape_recursive(page2, 12))
+page2 = (
+    "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
+)
+
+docs.extend(scrape_recursive(page1))
+docs.extend(scrape_recursive(page2))
 save_documents_json(docs, SCRAPED_DATA)
 print("Number of pages:", len(docs))
