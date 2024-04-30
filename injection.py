@@ -103,7 +103,6 @@ def scrape_recursive(url, depth):
 # create embeddings using OpenAIEmbeddings() and save them in a Chroma vector store 
 def create_embeddings(chunks): 
 	embeddings = OpenAIEmbeddings()
-	#vector_store = Chroma.from_documents(chunks, embeddings) 
 
 	# if you want to use a specific directory for chromadb 
 	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./chroma_db') 
