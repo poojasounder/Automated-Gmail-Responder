@@ -61,11 +61,17 @@
   }
 
   function handleClick() {
+		try {
     document
       .getElementById('capstone-button')
       .addEventListener('click', function (event) {
         injectBody();
       });
+		} catch (error) {
+				alert(`caught ${error} exception!`);
+		} finally {
+			alert("composeLocation needs to update etc, stop!!");
+		}
   }
 
   // Function to display loading dots in the text box
