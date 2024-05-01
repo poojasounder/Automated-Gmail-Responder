@@ -121,6 +121,14 @@
       composeContainer.innerHTML = parser.replace(/<\/?div>/g, ' ').trim();
       if (index === response.length) {
         clearInterval(interval);
+        const btn = document.querySelector('#capstone-button');
+        btn.src = chrome.runtime.getURL('/icon128.png');
+        btn.alt = 'Response Finished';
+              // Revert back to the original image after 3 seconds
+        setTimeout(function() {
+          btn.src = chrome.runtime.getURL('/logo.png'); // Replace 'originalIcon.png' with your original icon's filename
+          btn.alt = 'Capstone Draft';
+        }, 5000); // 5 seconds delay
       }
     }, 10); // Adjust typing speed here
   }
