@@ -101,13 +101,11 @@ def scrape_recursive(url, depth):
     docs = loader.load()
     clean_documents(docs)
     return docs
-""" # create embeddings using OpenAIEmbeddings() and save them in a Chroma vector store 
-def create_embeddings(chunks): 
-	embeddings = OpenAIEmbeddings()
-
-	# if you want to use a specific directory for chromadb 
-	vector_store = Chroma.from_documents(chunks, embeddings, persist_directory='./chroma_db') 
-	return vector_store """
+def load_config(filename):
+    """Reads configuration from a JSON file"""
+    with open(filename, 'r') as f:
+        config = json.load(f)
+    return config
 if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
@@ -140,11 +138,14 @@ if __name__ == "__main__":
     chunks = chunking(docs) # Split documents into chunks
     vectorstore.add_documents(chunks) # Create embeddings and save them in a vector store
     
-    page1 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/maseeh-college-of-engineering-and-computer-science/computer-science/"
-    page2 = "https://pdx.smartcatalogiq.com/en/2023-2024/bulletin/courses/cs-computer-science/"
-    doc = scrape_recursive(page1, 12)
-    doc.extend(scrape_recursive(page2, 12))
-    save_documents_json(doc, './scraped_data.json')
-    scraped_data = load_documents_json('./scraped_data.json')
-    chunks = chunking(scraped_data)
-    vectorstore.add_documents(chunks)
+    # Load configuration
+    config = load_config('config.json')
+    bulletin_websites = config['bulletin_websites']
+    # Scraping logic
+    for website in bulletin_websites:
+        doc = scrape_recursive(website, 12)
+        doc.extend(scrape_recursive(website, 12))
+        save_documents_json(doc, './scraped_data.json')
+        scraped_data = load_documents_json('./scraped_data.json')
+        chunks = chunking(scraped_data)
+        vectorstore.add_documents(chunks)
