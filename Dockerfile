@@ -10,14 +10,18 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Create a virtual environment
+RUN python3 -m venv env
 
-RUN playwright install
+# Install the Python packages specified by requirements.txt into the container
+RUN env/bin/pip install -r requirements.txt
 
 RUN playwright install-deps
-# Expose port 8000 to the outside world
-EXPOSE 8000
+RUN playwright install
+
+
+# Expose port 8080 to the outside world
+EXPOSE 8080
 
 # Make the script executable
 RUN chmod +x run.sh
