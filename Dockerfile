@@ -26,4 +26,4 @@ EXPOSE 8080
 RUN chmod +x run.sh
 
 # Run the script
-CMD ["./run.sh"]
+ENTRYPOINT ["sh", "-c", "python injection.py && uvicorn llm:app --reload"]
