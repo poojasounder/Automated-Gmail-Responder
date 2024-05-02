@@ -13,12 +13,12 @@ COPY . /app
 # Create a virtual environment
 RUN python3 -m venv env
 
-# Install the Python packages specified by requirements.txt into the container
-RUN env/bin/pip install -r requirements.txt
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 
-RUN playwright install
 RUN playwright install-deps
+RUN playwright install
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
