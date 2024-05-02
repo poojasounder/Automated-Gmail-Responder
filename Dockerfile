@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose port 8000 to the outside world
 EXPOSE 8000
 
-# Run the container with environment variable for OpenAI API key
-CMD ["sh", "-c", "python injection.py && uvicorn llm:app --reload"]
+# Make the script executable
+RUN chmod +x run.sh
 
+# Run the script
+CMD ["./run.sh"]
