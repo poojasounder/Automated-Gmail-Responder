@@ -1,95 +1,48 @@
-import os
 from dotenv import load_dotenv
-
+from langchain_openai import OpenAIEmbeddings,ChatOpenAI
 from langchain_community.vectorstores import Chroma
-from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering import load_qa_chain
-
 from langsmith import traceable, Client
 
 load_dotenv()
 
-LANGCHAIN_API_KEY = os.environ["LANGCHAIN_API_KEY"]
-
-
 @traceable
 def init_vectorstore():
+    '''Initializes vectorstore'''
     return Chroma(
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001", task_type="retrieval_query"
-        ),
+        embedding_function=OpenAIEmbeddings(),
         persist_directory="./.chromadb",
     )
 
 
 @traceable
 def init_llm():
-    return GoogleGenerativeAI(model="gemini-pro", temperature=0)
+    '''Initializes llm'''
+    return ChatOpenAI(model='gpt-3.5-turbo',temperature=0)
 
 
 @traceable
-def search_vectorstore(vectorstore, email):
+def search_vectorstore(vectorstore, email: str):
+    '''Performs search on vectorstore and returns relevant documents'''
     return vectorstore.similarity_search(email)
 
 
 @traceable
 def init_prompt():
-    rag_prompt = """
-    Your role: You are a CS Graduate Advisor at Portland State University
-    Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs
+    '''Initializes system prompt'''
+    rag_prompt = '''
     Task: Write an email response to the following email from a student with answers to their questions given the following context.
-
+    
     Email: {email}
     Context: {context}
-
-    If you need more information, please ask for it or if you don't have the context,
-    you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
-    Include all relevant infomation in your response.
-    """
-
+    '''
     return PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
 
 
 @traceable
 def generate_response(llm, prompt, email, docs):
-    chain = load_qa_chain(llm, chain_type="stuff", prompt=prompt)
-    response = chain.invoke(
-        {"input_documents": docs, "email": email}, return_only_outputs=True
-    )
-    return response
-
-
-@traceable
-def full_process(email):
-    vectorstore = Chroma(
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001", task_type="retrieval_query"
-        ),
-        persist_directory="./.chromadb",
-    )
-
-    llm = GoogleGenerativeAI(model="gemini-pro")
-
-    docs = vectorstore.similarity_search(
-        email
-    )  # Get relevant documents based on the query(success)
-
-    rag_prompt = """
-    Your role: You are a CS Graduate Advisor at Portland State University
-    Your Job: Your job is to respond to emails from students regarding any questions about CS graduate programs
-    Task: Write an email response to the following email from a student with answers to their questions given the following context.
-
-    Email: {email}
-    Context: {context}
-
-    If you need more information, please ask for it or if you don't have the context,
-    you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
-    Include all relevant infomation in your response.
-    """
-
-    prompt = PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
-
+    '''Generates a response for email, given prompt and relevant documents'''
     chain = load_qa_chain(llm, chain_type="stuff", prompt=prompt)
     response = chain.invoke(
         {"input_documents": docs, "email": email}, return_only_outputs=True
@@ -98,10 +51,9 @@ def full_process(email):
 
 
 if __name__ == "__main__":
+    # modify the email variable to test different responses
     email = "What classes do I have to take to complete the Master's program?"
     client = Client()
-    # response = full_process(email)
-    # print(response)
 
     vectorstore = init_vectorstore()
     llm = init_llm()
