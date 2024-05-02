@@ -17,7 +17,7 @@ RUN python3 -m venv env
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the playwright install command to download and install browsers
-RUN npm install -g playwright && playwright install
+RUN playwright install
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
