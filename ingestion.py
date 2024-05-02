@@ -17,7 +17,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-
+import subprocess
+subprocess.run(["playwright", "install"])
 
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
