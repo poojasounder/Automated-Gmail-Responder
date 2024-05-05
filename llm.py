@@ -75,6 +75,3 @@ def aerllm(q: Union[str, None] = None):
     )
     response["output_text"] = re.sub(r"\n", "<div><br></div>", response["output_text"])
     return {"response": response["output_text"]}
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)

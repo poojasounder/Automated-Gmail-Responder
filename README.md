@@ -6,3 +6,7 @@
 gcloud builds submit --timeout=900 --tag gcr.io/cs470-rag-llm/capstone
 gcloud run deploy capstone   --image gcr.io/cs470-rag-llm/capstone   --service-account pdx-askcs-website@cs470-rag-llm.iam.gserviceaccount.com
 
+to run locally
+docker run --rm -it -p 8000:8000 automatedgmailresponder:latest
+
+
