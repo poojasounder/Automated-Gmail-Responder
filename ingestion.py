@@ -1,7 +1,9 @@
 import json
 import re
+import time
 import requests
 import unidecode
+import asyncio
 
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -18,7 +20,8 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 import subprocess
-subprocess.run(["playwright", "install"])
+#subprocess.run(["playwright", "install"])
+subprocess.run(["playwright", "install", "--with-deps"])
 
 def save_documents_json(documents, filename):
     """Saves list of Documents as JSON file"""
@@ -45,6 +48,7 @@ def clean_documents(documents):
     """Cleans page_content text of Documents list"""
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
+    return documents
 
 
 def scrape(filename):
@@ -72,7 +76,7 @@ def scrape(filename):
     docs_tr = transformer.transform_documents(
         documents=docs, tags_to_extract=["article"]
     )
-
+    clean_documents(docs_tr)
     return docs_tr
 
 
@@ -85,7 +89,7 @@ def load_pdf_documents(dir):
 
 def chunking(documents):
     """Takes in Documents and splits text into chunks"""
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=2000)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_documents(documents)
     return chunks
 
@@ -146,9 +150,9 @@ if __name__ == "__main__":
 
     file = "./urls.txt"
     documents = scrape(file)
-    clean_documents(documents)
-    save_documents_json(documents, "./scraped_data.json")
-
+    chunks = chunking(documents)
+    vectorstore.add_documents(chunks)
+    
     docs = load_pdf_documents("FAQ")  # Load all documents in the directory(success)
     chunks = chunking(docs)  # Split documents into chunks
     vectorstore.add_documents(
@@ -160,9 +164,6 @@ if __name__ == "__main__":
     bulletin_websites = config["bulletin_websites"]
     # Scraping logic
     for website in bulletin_websites:
-        doc = scrape_recursive(website, 12)
-        doc.extend(scrape_recursive(website, 12))
-        save_documents_json(doc, "./scraped_data.json")
-        scraped_data = load_documents_json("./scraped_data.json")
-        chunks = chunking(scraped_data)
+        result = scrape_recursive(website, 12)
+        chunks = chunking(result)
         vectorstore.add_documents(chunks)

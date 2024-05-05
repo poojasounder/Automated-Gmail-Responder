@@ -7,7 +7,7 @@ from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 from langchain.chains.question_answering import load_qa_chain
 from langchain_openai import OpenAIEmbeddings,ChatOpenAI
-
+import uvicorn
 """
 try:
     subprocess.run(["python","injection.py"], bufsize=0)
@@ -75,3 +75,6 @@ def aerllm(q: Union[str, None] = None):
     )
     response["output_text"] = re.sub(r"\n", "<div><br></div>", response["output_text"])
     return {"response": response["output_text"]}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
