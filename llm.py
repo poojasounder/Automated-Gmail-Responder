@@ -44,7 +44,7 @@ def run(llm, prompt, email, docs):
 
 
 @app.get("/")
-def aerllm(q: Union[str, None] = None):
+def aerllm(q: Union[str, None] = None, userPrompt: Union[str, None] = None):
     email: str = None
     # loading environment variables
     load_dotenv()
@@ -74,6 +74,7 @@ def aerllm(q: Union[str, None] = None):
     
     Email: {email}
     Context: {context}
+    userPrompt: {userPrompt}
     
     If you need more information, please ask for it or if you don't have the context,
     you can write an email response saying "Sorry,I am not able to find the provide the answers to your questions"
@@ -94,7 +95,7 @@ def aerllm(q: Union[str, None] = None):
     ) """
 
     response = chain.invoke(
-        {"input_documents": docs, "email": email}, return_only_outputs=True
+        {"input_documents": docs, "email": email, "userPrompt": userPrompt}, return_only_outputs=True
     )
     response["output_text"] = re.sub(r"\n", "<br>", response["output_text"])
     return {"response": response["output_text"]}

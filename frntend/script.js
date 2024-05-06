@@ -71,10 +71,10 @@
     document
       .getElementById('capstone-button')
       .addEventListener('click', function (event) {
-        chrome.storage.local.get(['savedText'], function (result) {
-          alert(result.savedText);
-        });
-        //injectBody();
+        //chrome.storage.local.get(['savedText'], function (result) {
+        //alert(result.savedText);
+        //});
+        injectBody();
       });
   }
 
@@ -100,15 +100,18 @@
   function injectBody() {
     displayLoadingDots();
     let question = extractBody();
-    fetch(`http://127.0.0.1:8000?q=${question}`)
-      .then((response) => response.json())
-      .then((dta) => {
-        if (document.querySelector(composeLocation)) {
-          stopLoadingDots();
-          typeOutResponse(dta.response);
-        }
-      })
-      .catch((error) => alert(error));
+    chrome.storage.local.get('savedText', function (data) {
+      let userPrompt = data.savedText;
+      fetch(`http://127.0.0.1:8000?q=${question}&userPrompt=${userPrompt}`)
+        .then((response) => response.json())
+        .then((dta) => {
+          if (document.querySelector(composeLocation)) {
+            stopLoadingDots();
+            typeOutResponse(dta.response);
+          }
+        })
+        .catch((error) => alert(error));
+    });
   }
   // Typing out response character by character
   function typeOutResponse(response) {
