@@ -6,6 +6,14 @@
   const composeLocation = '.Am.aiL.aO9.Al.editable.LW-avf.tS-tW'; //Compose email container
   const imageURL = chrome.runtime.getURL('/logo.png');
 
+  chrome.storage.local.get('savedText', function (data) {
+    const defaultPrompt =
+      'Task: Write an email response to the following email from a student with answers to their questions given the following context.';
+    if (data.savedText === undefined) {
+      chrome.storage.local.set({ savedText: defaultPrompt });
+    }
+  });
+
   //Checks for necessary elements to load
   const elementObserver = new MutationObserver(function (
     mutations,
@@ -51,11 +59,10 @@
       img.alt = 'Capstone Draft';
       img.id = 'capstone-button';
       img.classList.add('aaA', 'aMZ');
-
       img.style.cssText = 'cursor: pointer; width: 20px; height: 20px';
 
       container.appendChild(img);
-      document.querySelector(btnLocation).appendChild(container);
+      someDiv.appendChild(container);
       img.addEventListener('click', handleClick());
     }
   }
@@ -64,11 +71,10 @@
     document
       .getElementById('capstone-button')
       .addEventListener('click', function (event) {
-        chrome.storage.local.get('savedText', function (data) {
-          savedText = data.savedText;
-          console.log('Script Saved Prompt:', savedText);
+        chrome.storage.local.get(['savedText'], function (result) {
+          alert(result.savedText);
         });
-        injectBody();
+        //injectBody();
       });
   }
 
@@ -99,7 +105,7 @@
       .then((dta) => {
         if (document.querySelector(composeLocation)) {
           stopLoadingDots();
-          typeOutResponse(dta.response + savedText);
+          typeOutResponse(dta.response);
         }
       })
       .catch((error) => alert(error));
@@ -109,7 +115,7 @@
     const composeContainer = document.querySelector(composeLocation);
     if (!response) {
       console.log('No response from API');
-      injectBody(); //infinite loop?
+      //injectBody(); //infinite loop?
       return;
     }
     let index = 0;

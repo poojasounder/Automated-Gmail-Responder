@@ -1,4 +1,5 @@
-const defaultPrompt = 'This is the defualt prompt';
+const defaultPrompt =
+  'Task: Write an email response to the following email from a student with answers to their questions given the following context.';
 
 document.addEventListener('DOMContentLoaded', function () {
   chrome.storage.local.get('savedText', function (data) {
