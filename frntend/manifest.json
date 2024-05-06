@@ -20,7 +20,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["/logo.png"],
+      "resources": ["/logo.png", "/icon128.png"],
       "matches": ["*://mail.google.com/*"]
     }
   ]
