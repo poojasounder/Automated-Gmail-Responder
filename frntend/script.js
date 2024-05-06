@@ -16,7 +16,7 @@
 
   //Checks for necessary elements to load
   const elementObserver = new MutationObserver(function (
-    mutations,
+    mutation,
     mutationInstance
   ) {
     const someDiv = document.querySelector(btnLocation);
@@ -68,20 +68,15 @@
   }
 
   function handleClick() {
-		try {
-    document
-      .getElementById('capstone-button')
-      .addEventListener('click', function (event) {
-        //chrome.storage.local.get(['savedText'], function (result) {
-        //alert(result.savedText);
-        //});
-        injectBody();
-      });
-		} catch (error) {
-				alert(`caught ${error} exception!`);
-		} finally {
-			alert("composeLocation needs to update etc, stop!!");
-		}
+    try {
+      document
+        .getElementById('capstone-button')
+        .addEventListener('click', function (event) {
+          injectBody();
+        });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   // Function to display loading dots in the text box
@@ -116,7 +111,7 @@
             typeOutResponse(dta.response);
           }
         })
-        .catch((error) => alert(error));
+        .catch((error) => console.error(error));
     });
   }
   // Typing out response character by character
@@ -137,8 +132,8 @@
         const btn = document.querySelector('#capstone-button');
         btn.src = chrome.runtime.getURL('/icon128.png');
         btn.alt = 'Response Finished';
-              // Revert back to the original image after 3 seconds
-        setTimeout(function() {
+        // Revert back to the original image after 3 seconds
+        setTimeout(function () {
           btn.src = chrome.runtime.getURL('/logo.png'); // Replace 'originalIcon.png' with your original icon's filename
           btn.alt = 'Capstone Draft';
         }, 5000); // 5 seconds delay
