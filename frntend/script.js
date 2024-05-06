@@ -103,7 +103,7 @@
     let question = extractBody();
     chrome.storage.local.get('savedText', function (data) {
       let userPrompt = data.savedText;
-      fetch(`http://127.0.0.1:8000?q=${question}&userPrompt=${userPrompt}`)
+      fetch(`https://capstone-dwgf5hj2da-uw.a.run.app?q=${question}&userPrompt=${userPrompt}`)
         .then((response) => response.json())
         .then((dta) => {
           if (document.querySelector(composeLocation)) {
