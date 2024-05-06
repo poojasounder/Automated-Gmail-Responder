@@ -1,9 +1,8 @@
 import json
 import re
-import time
+import os
 import requests
 import unidecode
-import asyncio
 
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -131,6 +130,14 @@ if __name__ == "__main__":
     # loading environment variables
     load_dotenv()
 
+    # Check if OpenAI API key is provided in environment variables
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if openai_api_key is None:
+        # Prompt the user toenter the OpenAI API key if not found
+        openai_api_key = input("Please enter your OpenAI API key: ")
+        # Set the environment variable
+        os.environ["OPENAI_API_KEY"] = openai_api_key
+        
     # Initialize vectorstore
     vectorstore = Chroma(
         embedding_function=OpenAIEmbeddings(), persist_directory="./.chromadb"
