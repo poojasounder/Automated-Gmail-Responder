@@ -18,13 +18,20 @@ To run the project after uploading new documents, follow these steps:
 
 1. Run `python3 ingestion.py`. 
 You will be prompted to enter your OpenAI API key.
+
 2. Build the Docker image:
    ```bash
    gcloud builds submit --timeout=900 --tag gcr.io/cs470-rag-llm/capstone
    ```
 
-2) gcloud builds submit --timeout=900 --tag gcr.io/cs470-rag-llm/capstone
-3) gcloud run deploy capstone   --image gcr.io/cs470-rag-llm/capstone --min-instances=1 --memory=1Gi --set-env-vars=OPENAI_API_KEY='YOUR_OPENAI_API_KEY' --region=us-west1 --allow-unauthenticated --port=8000
+3. Deploy the Docker image:
+    ```bash
+    gcloud run deploy capstone   
+    --image gcr.io/cs470-rag-llm/capstone 
+    --min-instances=1 
+    --memory=1Gi --set-env-vars=OPENAI_API_KEY='YOUR_OPENAI_API_KEY' --region=us-west1 
+    --allow-unauthenticated --port=8000
+    ```
 
 
 
