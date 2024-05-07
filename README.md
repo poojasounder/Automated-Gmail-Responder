@@ -40,5 +40,6 @@ You will be prompted to enter your OpenAI API key.
 We have also developed a chrome extension to facilitate easier access to the automated response feature.
 Only users who are given the string of our chrome extension would be able to access our extension
 
+## Acknowledgements
 
 
