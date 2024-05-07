@@ -13,8 +13,11 @@ This project aims to automate responses to Gmail emails using Langchain. It util
 - Hilliard Domangue
 - Israel Ayala
 
+## Getting Started
+To run the project after uploading new documents, follow these steps:
 
-To run the project after uploading new documents,
+1. Run `python3 ingestion.py`. 
+You will be prompted to enter your OpenAI API key.
 1) python3 ingestion.py
 * ## will prompt you for OPENAI API KEY
 2) gcloud builds submit --timeout=900 --tag gcr.io/cs470-rag-llm/capstone
