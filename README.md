@@ -36,8 +36,23 @@ We have also developed a chrome extension to facilitate easier access to the aut
 Only users who are given the string of our chrome extension would be able to access our extension
 
 ## Updating documents
-- FAQ documents
-- Bulletin website
+Follow the steps to update the Bulletin: 
+Step 1: ctrl+F or cmd+F to word search the website for `config.json`
+Step 2: Click on the config.json file
+Step 3: Click on the Edit button
+![alt text](image.png)
+Step 4: Replace the URL with the updated URL
+Step 5: Then commit the changes. Make sure to select `Commit directly to the main branch`. And then press the green `commit changes button`.
+
+Follow the steps to update the FAQ:
+Step 1: Go to FAQ folder
+Step 2: Click on `Upload files`
+![alt text](image-1.png)
+Step 3: Choose your file and then `Commit changes`
+Step 4: Delete the older FAQ file by clicking into the file and pressing on the three dots as shown in the screenshot. And select the option to delete the file.
+![alt text](image-2.png)
+
+
 
 ## Acknowledgements
 
