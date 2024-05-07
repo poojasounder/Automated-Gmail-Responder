@@ -6,6 +6,7 @@ This project aims to automate responses to Gmail emails using Langchain. It util
 ## Developers
 - Pooja Sounder Rajan
 - Ana Macavei
+- Ben Le
 - Josh Li
 - Seymour Roberts
 - Joseph Nguyen
