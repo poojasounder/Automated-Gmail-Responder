@@ -27,13 +27,8 @@ You will be prompted to enter your OpenAI API key.
 
 3. Deploy the Docker image:
     ```bash
-    gcloud run deploy capstone --image gcr.io/cs470-rag-llm/capstone
-    --min-instances=1
-    --memory=1Gi
-    --set-env-vars=OPENAI_API_KEY='YOUR_OPENAI_API_KEY'
-    --region=us-west1
-    --allow-unauthenticated
-    --port=8000
+    gcloud run deploy capstone --image gcr.io/cs470-rag-llm/capstone --min-instances=1 --memory=1Gi --set-env-vars=OPENAI_API_KEY='YOUR_OPENAI_API_KEY'
+    --region=us-west1 --allow-unauthenticated --port=8000
     ```
 
 ## Chrome Extension
