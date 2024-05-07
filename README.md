@@ -36,7 +36,7 @@ We have also developed a chrome extension to facilitate easier access to the aut
 Only users who are given the string of our chrome extension would be able to access our extension
 
 ## Updating documents
-Follow the steps to update the Bulletin: <br>
+**Follow the steps to update the Bulletin:** <br>
 Step 1: ctrl+F or cmd+F to word search the website for `config.json` <br>
 Step 2: Click on the config.json file <br>
 Step 3: Click on the Edit button <br>
@@ -44,7 +44,7 @@ Step 3: Click on the Edit button <br>
 Step 4: Replace the URL with the updated URL<br>
 Step 5: Then commit the changes. Make sure to select `Commit directly to the main branch`. And then press the green `commit changes button`.<br>
 
-Follow the steps to update the FAQ:<br>
+**Follow the steps to update the FAQ:**<br>
 Step 1: Go to FAQ folder<br>
 Step 2: Click on `Upload files`<br>
 ![alt text](image-1.png)<br>
