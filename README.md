@@ -1,5 +1,5 @@
 # Automated-Gmail-Responder
-
+## Developers: Pooja Sounder Rajan, Ana Macavei, Josh Li, Seymour Roberts, Joseph Nguyen, Julie Nguyen, Hilliard Domangue, Israel Ayala
 
 To run the project after uploading new documents,
 1) python3 ingestion.py
