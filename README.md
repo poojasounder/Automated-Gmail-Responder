@@ -1,7 +1,7 @@
 # Automated-Gmail-Responder
 
-To run the project after uploading new documents,
 
+To run the project after uploading new documents,
 1) python3 ingestion.py
 * ## will prompt you for OPENAI API KEY
 2) gcloud builds submit --timeout=900 --tag gcr.io/cs470-rag-llm/capstone
