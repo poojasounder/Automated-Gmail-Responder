@@ -1,5 +1,18 @@
-# Automated-Gmail-Responder
-## Developers: Pooja Sounder Rajan, Ana Macavei, Josh Li, Seymour Roberts, Joseph Nguyen, Julie Nguyen, Hilliard Domangue, Israel Ayala
+# Automated Gmail Responder
+
+## Overview
+This project aims to automate responses to Gmail emails using Langchain. It utilizes the OpenAI API to generate relevant responses to incoming emails.
+
+## Developers
+- Pooja Sounder Rajan
+- Ana Macavei
+- Josh Li
+- Seymour Roberts
+- Joseph Nguyen
+- Julie Nguyen
+- Hilliard Domangue
+- Israel Ayala
+
 
 To run the project after uploading new documents,
 1) python3 ingestion.py
