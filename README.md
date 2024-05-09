@@ -45,12 +45,14 @@ Step 4: Replace the URL with the updated URL<br>
 Step 5: Then commit the changes. Make sure to select `Commit directly to the main branch`. And then press the green `commit changes button`.<br>
 
 **Follow the steps to update the FAQ:**<br>
-Step 1: Go to FAQ folder<br>
-Step 2: Click on `Upload files`<br>
+Step 1: Export Google Document to PDF first
+Step 2: Go to FAQ folder<br>
+Step 3: Click on `Upload files`<br>
 ![alt text](image-1.png)<br>
-Step 3: Choose your file and then `Commit changes`<br>
-Step 4: Delete the older FAQ file by clicking into the file and pressing on the three dots as shown in the screenshot. And select the option to delete the file.<br>
+Step 4: Choose your file and then `Commit changes`<br>
+Step 5: Delete the older FAQ file by clicking into the file and pressing on the three dots as shown in the screenshot. And select the option to delete the file.<br>
 ![alt text](image-2.png)<br>
+
 
 ## Acknowledgements
 
