@@ -2,7 +2,7 @@
   "name": "Gmail Extension",
   "version": "0.0.1",
   "manifest_version": 3,
-  "description": "Capstone sample description",
+  "description": "Automated email responder for Portland State University Computer Science advisors",
   "content_scripts": [
     {
       "js": ["script.js"],
@@ -13,7 +13,7 @@
   "permissions": ["activeTab", "storage", "scripting"],
   "action": {
     "default_popup": "index.html",
-    "default_title": "Capstone Thing"
+    "default_title": "Additional Prompt Guidelines"
   },
   "icons": {
     "128": "logo.png"

@@ -64,7 +64,7 @@ def aerllm(q: Union[str, None] = None, userPrompt: Union[str, None] = None):
     
     Email: {email}
     Context: {context}
-    userPrompt: {userPrompt}
+    Additional Guidelines: {userPrompt}
     '''
 
     prompt = PromptTemplate(template=rag_prompt, input_variables=["context", "email"])
